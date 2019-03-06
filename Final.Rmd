@@ -132,5 +132,371 @@ avgcombined
 
 ```
 
+
+```{r}
+# I don't know the agents
+agentsPlayers <- agents_players(all_agents=TRUE, return_message = TRUE)
+agents_players(agents = c("Jeff Schwartz"))
+
+# Something like all star?
+allNBATeams <- all_nba_teams()
+MJTeams <- allNBATeams %>% filter(allNBATeams$namePlayer == 'Michael Jordan')
+
+# All Star Game Information: Geo-mapping possible
+library(dplyr)
+library(nbastatR)
+df_asg <-
+all_star_games()
+df_asg %>% glimpse()
+df_asg %>% count(namePlayerMVP, sort = T)
+
+# ???
+assign_bref_data(dataGameLogsTeam)
+
+assign_nba_players()
+df_dict_nba_players %>% filter(namePlayer == 'Michael Jordan')
+
+assign_nba_teams()
+
+beyond_the_numbers(count_articles = 10)
+
+# Box Scores - can be joined with dataGameLogsTeam
+# Not working
+# box_scores(game_ids = c(21800958))
+# box_scores(game_ids = c(21700002, 21700003), box_score_types = c("Traditional", "Advanced", "Scoring", "Misc", "Usage", "Four Factors", "Tracking"), result_types = c("player", "team"), join_data = TRUE, assign_to_environment = TRUE, return_message = TRUE)
+
+# Do Nothing
+bref_awards(awards = c("Most Valuable Player", "Rookie of the Year", "Defensive Player of the Year"))
+awards<- bref_awards(awards = c("Most Valuable Player", "Rookie of the Year",
+  "Defensive Player of the Year", "Sixth Man of the Year",
+  "Most Improved Player", "Teammate of the Year",
+  "J. Walter Kennedy Citizenship Award", "NBA Finals Most Valuable Player",
+  "ABA Playoffs Most Valuable Player",
+  "All-Star Game Most Valuable Player", "Comeback Player of the Year",
+  "Sporting News MVP", "Sporting News Rookie of the Year",
+  "Coach of the Year", "Executive of the Year"))
+
+# Error
+bref_awards_votes()
+
+# All players bio. can be mapped to map
+bref_bios( players = c("Michael Jordan","Stephen Curry"),
+player_ids = NULL,
+assign_to_environment = TRUE)
+
+bref_injuries()
+
+bref_players_stats(seasons = 2017:2018, tables = c("advanced", "totals"))
+
+bref_teams_stats(seasons = 2017:2018)
+
+coaching_staffs()
+
+current_schedule()
+
+# Current Standings 2018-2019 season
+currentStandings <- current_standings()
+
+# NOT RUN {
+days_scores(game_dates = "2017-12-31", include_standings = F, return_message = T)
+# }
+
+# NOT RUN {
+dictionary_bref_awards()
+# }
+
+# NOT RUN {
+dictionary_bref_coaches()
+# }
+
+# NOT RUN {
+dictionary_bref_players()
+# }
+
+# NOT RUN {
+dictionary_bref_teams()
+# }
+
+# NOT RUN {
+dictionary_nba_names()
+# }
+
+dictionary_player_photos()
+
+# NOT RUN {
+draft_combines(years = c(2001:2018),
+nest_data = T)
+# }
+
+# NOT RUN {
+library(dplyr)
+df_drafts <-
+drafts(draft_years = 1983:2018, nest_data = FALSE, return_message = TRUE)
+
+## Where do top 5 picks since 1983 come from?
+
+df_drafts %>%
+filter(numberPickOverall <= 5) %>%
+count(nameOrganizationFrom, sort = T)
+# }
+
+# NOT RUN {
+fanduel_summary(game_ids = c(21700002, 21700003), nest_data = F, return_message = T)
+# }
+
+# NOT RUN {
+franchise_leaders(teams = "Brooklyn Nets", modes = c("Totals"))
+# }
+
+# NOT RUN {
+game_logs(seasons = 2019, result_types = c("team", "player"))
+# }
+
+gather_data(data, variable_name = "item", numeric_ids = c("^id"),
+  use_logical_keys = TRUE, use_factor_keys = TRUE,
+  unite_columns = NULL, separate_columns = NULL,
+  use_date_keys = FALSE, remove_na = TRUE)
+
+# NOT RUN {
+hoops_hype_salary_summary(spread_data = TRUE)
+# }
+
+# NOT RUN {
+library(dplyr)
+df_salaries <-
+hoopshype_salaries(all_teams = TRUE,
+ nest_data = F, return_message = T)
+ ## By Expiring Salary Type and Team
+ df_salaries %>% group_by(slugSeason,  nameTeam, isFinalSeason) %>%
+ summarise(expiringSalaries = sum(amountContractMil, na.rm = T) / 1000000) %>%
+ arrange(nameTeam)
+# }
+ 
+# NOT RUN {
+metrics_leaders(seasons = 2000:2005,
+metric = "pts",
+season_types = "Regular Season",
+ modes = "PerGame",
+ return_message = T)
+# }
+
+# NOT RUN {
+nba_franchise_history()
+# }
+
+# NOT RUN {
+nba_insider_salaries(assume_player_opt_out = T, assume_team_doesnt_exercise = T, return_message = TRUE)
+# }
+
+# NOT RUN {
+nba_player_ids(players = c("Mitch Richmond", "Kyle Kuzma"))
+# }
+
+# NOT RUN {
+nba_players()
+# }
+
+# NOT RUN {
+nba_stats_api_items()
+# }
+
+# NOT RUN {
+nba_teams()
+# }
+
+# NOT RUN {
+nba_teams_ids(teams = c("Brooklyn Nets", "Denver Nuggets"))
+# }
+
+# NOT RUN {
+nba_teams_seasons()
+# }
+
+# NOT RUN {
+nbadraftnet_mock_drafts(years = 2012:2017,
+merge_nba_data = TRUE,
+nest_data = F,
+return_message = T)
+# }
+
+# NOT RUN {
+nbastats_api_parameters(1:3)
+# }
+
+# NOT RUN {
+play_by_play(game_ids = c(21700002, 21700003), nest_data = F, return_message = T)
+# }
+
+# NOT RUN {
+player_profiles(player_ids = c(203500, 1628384),
+players = c("Michael Jordan", "Caris LeVert", "Jarrett Allen"),
+nest_data = FALSE,
+return_message = TRUE)
+# }
+
+# NOT RUN {
+library(dplyr)
+df_players_agents <-
+ players_agents()
+df_players_agents %>%
+glimpse()
+# }
+
+# NOT RUN {
+players_awards(players = c( "Charles Oakley", "Gary Melchionni"),
+player_ids = c(893, 76375),
+return_message = T,
+ nest_data = F)
+# }
+
+# NOT RUN {
+players_bios(players = c("Carmelo Anthony", "Joe Johnson"))
+# }
+
+# NOT RUN {
+players_careers(players = c("Joe Harris", "Myles Turner", "Spencer Dinwiddie"),
+modes = c("Totals", "PerGame"))
+# }
+
+# NOT RUN {
+players_rotowire(players = c( "Jarrett Allen", "DeMarre Carroll", "Allen Crabbe"))
+# }
+
+# NOT RUN {
+players_tables(players = c("Caris LeVert", "Joe Harris"), tables =  c("year over year", "passes", "game splits"),   modes = c("PerGame", "Totals"), measures = c("Base", "Advanced"), assign_to_environment = TRUE)
+# }
+
+# NOT RUN {
+playoff_pictures(seasons = 2015:2018,
+assign_to_environment = TRUE,
+ include_numeric_records = T)
+# }
+
+# NOT RUN {
+pst_transaction(person = NULL, team = "Nets")
+# }
+
+scale_per_minute(data, scale_columns = NULL)
+
+# NOT RUN {
+seasons_players(2010:2017, nest_data = T, return_message = T)
+# }
+
+# NOT RUN {
+library(nbastatR)
+library(dplyr)
+df_rosters <- seasons_rosters(2015:2018)
+
+### Mean Age by Season and Team
+df_rosters %>%
+group_by(slugSeason, slugTeam) %>%
+summarise(ageMean = mean(agePlayer)) %>%
+arrange(ageMean) %>%
+ungroup()
+# }
+
+# NOT RUN {
+seasons_schedule(seasons = c(2012, 2018))
+# }
+
+# NOT RUN {
+sl_players()
+# }
+
+# NOT RUN {
+sl_teams()
+# }
+
+
+spread_data(data, variable_name = "item", value_name = "value",
+  perserve_order = TRUE, unite_columns = NULL,
+  separate_columns = NULL)
+
+# NOT RUN {
+standings(seasons = 2015:2018, season_types = "Regular Season", resolve_records = T, nest_data = F, return_message = T)
+# }
+
+summarise_per_minute(data, id_columns = c("idPlayerSeason"),
+  scale_columns = c("pts", "fg", "ast", "tov", "blk", "stl", "drb",
+  "trb", "orb", "ft", "pf", "countLayupsShooting", "countDunks", "hlf"))
+
+# NOT RUN {
+synergy(seasons = 2019, result_types = c("player", "team"), season_types = c("Regular Season"), set_types = c("offensive", "defensive"), categories = c("Transition", "Isolation", "PRBallHandler", "PRRollman", "Postup",  "Spotup", "Handoff", "Cut", "OffScreen", "OffRebound", "Misc"), results = 500, assign_to_environment = TRUE, return_wide = F, return_message = TRUE)
+# }
+
+# NOT RUN {
+team_season_roster(team = "Denver Nuggets", season = 1991)
+# }
+
+# NOT RUN {
+teams_annual_stats(all_active_teams = T,
+modes = c("Totals"),
+return_message = TRUE,
+ nest_data =F)
+# }
+
+# NOT RUN {
+teams_coaches(2018:2019)
+# }
+
+# NOT RUN {
+teams_details(all_teams = TRUE, assign_to_environment = TRUE)
+
+# }
+
+
+# NOT RUN {
+teams_players_stats(seasons = 2018, types = c("player", "team"),
+ modes = c("PerGame", "Totals"),
+ tables = c("general", "defense", "clutch", "hustle", "shots", "shot locations"))
+# }
+
+# NOT RUN {
+teams_rankings(seasons = 2019)
+# }
+
+# NOT RUN {
+teams_rosters(seasons = 2010:2018, nest_data = F, return_message = T)
+# }
+
+# NOT RUN {
+teams_rotowire(teams = "Brooklyn Nets")
+# }
+
+# NOT RUN {
+teams_seasons_info(teams = "Brooklyn Nets", seasons = c(1984, 1990, 1995, 2018), season_types = "Regular Season")
+# }
+
+# NOT RUN {
+teams_shots(teams = "Golden State Warriors",
+seasons = 2018)
+# }
+
+# NOT RUN {
+teams_tables(teams = c("Brooklyn Nets", "New York Knicks"),
+ seasons = 2017:2018, tables = c("splits", "shooting"), measures = "Base", modes = c("PerGame", "Totals"))
+
+# }
+
+
+# NOT RUN {
+transactions()
+# }
+
+validate_nba_player_photos(sleep_time = 2)
+
+widen_bref_data(data)
+
+# NOT RUN {
+win_probability(game_ids = c(21700002, 21700005), filter_non_plays = T,
+nest_data = FALSE,
+return_message = TRUE)
+# }
+
+
+
+
+
+```
 \normalsize
 
