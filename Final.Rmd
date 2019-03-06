@@ -1,0 +1,136 @@
+---
+title: Problem Set 6
+author: Subeom Lee
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+fontsize: 10pt
+colorlinks: true
+linkcolor: cyan
+---
+
+```{r, message=FALSE, echo=FALSE}
+library(lubridate)
+library(texreg)
+library(broom)
+library(knitr)
+library(ggpubr)
+library(ggrepel)
+library(janitor)
+opts_chunk$set(echo=TRUE,
+               cache.lazy=FALSE,
+               collapse=TRUE,
+               comment=NA,
+               warning=FALSE,
+               prompt=FALSE,
+               message=FALSE
+               ,cache=TRUE
+               )
+options(digits=4, scipen=0)
+masterdoc <- knitr::current_input()
+```
+
+
+# 1 Flight delay predictions
+
+\footnotesize
+\medskip
+```{r}
+# library(tidyverse)
+# library(DBI)
+# library(RPostgres)
+# user <- 'imdbstudent'
+# password <- 'Hurricane2017!'
+# dbname <- 'imdb'
+# host <- 'mydbinstance-2.c09hulazda1l.us-west-2.rds.amazonaws.com'
+# mydb <- dbConnect(RPostgres::Postgres(),
+#   user=user,
+#   password=password,
+#   dbname=dbname,
+#   host=host)
+# tbls = dbListTables(mydb)
+# for (i in tbls) {
+#   assign(i, collect(tbl(mydb, i)))
+#   save(list=i, file=paste0('./data/imdb/', i, '.Rdata'))
+# }
+
+#http://asbcllc.com/nbastatR/index.html
+
+library(nbastatR)
+library(future)
+library(stringi)
+library(tidyverse)
+library(lubridate)
+library(texreg)
+library(broom)
+library(knitr)
+library(ggpubr)
+library(ggrepel)
+library(janitor)
+
+plan(multiprocess) 
+
+# Run only when needed
+# game_logs(seasons = 1980:2019, result_types = c("team", "player"))
+# dataGameLogsTeam$Team = substring(dataGameLogsTeam$slugMatchup, 1, 3)
+
+# Run when you updated data
+# save(df_nba_player_dict, file='df_nba_player_dict.Rdata')
+# save(dataGameLogsTeam, file='dataGameLogsTeam.Rdata')
+# save(dataGameLogsPlayer, file='dataGameLogsPlayer.Rdata')
+
+df_nba_player_dict <- load('df_nba_player_dict.Rdata')
+dataGameLogsTeam <- load('dataGameLogsTeam.Rdata')
+dataGameLogsPlayer <- load('dataGameLogsPlayer.Rdata')
+
+avg <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$Team), mean)
+colnames(avg)[1] <- "Year"
+colnames(avg)[2] <- "Team"
+
+
+
+avgplot <- avg %>%
+            filter(Team %in% c('GSW', 'CHI', 'HOU', 'LAL')) %>%
+            ggplot(aes(x=Year, y=pctFG3Team, colour=Team)) +
+            geom_line()
+avgplot
+
+avg2 <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason), mean)
+colnames(avg2)[1] <- "Year"
+
+avgplot2 <- avg2 %>%
+              ggplot(aes(x=Year, y=pctFG3Team)) +
+              geom_path(colour='black', size=2)
+avgplot2
+
+avgfiltered <- avg %>% filter(Team %in% c('GSW', 'CHI', 'HOU', 'LAL'))
+
+avgcombined <- ggplot() +
+                geom_line(data=avgfiltered, aes(x=Year, y=pctFG3Team, colour=Team), size=1) +
+                geom_smooth(data=avg2, aes(x=Year, y=pctFG3Team), size=2, colour='black')
+avgcombined
+
+# library(ggplot2)
+# library(ggpubr)
+# theme_set(theme_pubr())
+# 
+# figure <- ggarrange(avgplot, avgplot2,
+#                     labels = c("Each Team", "All Teams"),
+#                     ncol = 1, nrow = 2)
+# figure
+
+# climate <- read.csv('ps5_data.csv')
+# a <- ggplot(climate) +
+#       xlab('Year') +
+#       ylab('Temperature(°C)') + 
+#       theme(panel.border=element_rect(colour="black", fill=NA), panel.background=element_rect(fill=NA),
+#             panel.grid=element_line(color="grey")) + 
+#       geom_smooth(aes(Year, Lowess.5.), colour="blue", size=1) +
+#       geom_line(aes(Year, No_Smoothing), colour="grey", size=1) + 
+#       geom_point(aes(Year, No_Smoothing), shape=1, size=3)
+# 
+
+```
+
+\normalsize
+
