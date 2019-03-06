@@ -79,9 +79,9 @@ plan(multiprocess)
 # save(dataGameLogsTeam, file='dataGameLogsTeam.Rdata')
 # save(dataGameLogsPlayer, file='dataGameLogsPlayer.Rdata')
 
-df_nba_player_dict <- load('df_nba_player_dict.Rdata')
-dataGameLogsTeam <- load('dataGameLogsTeam.Rdata')
-dataGameLogsPlayer <- load('dataGameLogsPlayer.Rdata')
+# df_nba_player_dict <- load('df_nba_player_dict.Rdata')
+# dataGameLogsTeam <- load('dataGameLogsTeam.Rdata')
+# dataGameLogsPlayer <- load('dataGameLogsPlayer.Rdata')
 
 avg <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$Team), mean)
 colnames(avg)[1] <- "Year"
