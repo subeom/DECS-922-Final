@@ -1,12 +1,14 @@
 ---
-title: Problem Set 6
-author: Subeom Lee
+title: "Problem Set 6"
+author: "Subeom Lee"
 date: "`r Sys.Date()`"
 output:
+  html_document:
+    df_print: paged
   pdf_document: default
-fontsize: 10pt
-colorlinks: true
 linkcolor: cyan
+fontsize: 10pt
+colorlinks: yes
 ---
 
 ```{r, message=FALSE, echo=FALSE}
@@ -36,24 +38,6 @@ masterdoc <- knitr::current_input()
 \footnotesize
 \medskip
 ```{r}
-# library(tidyverse)
-# library(DBI)
-# library(RPostgres)
-# user <- 'imdbstudent'
-# password <- 'Hurricane2017!'
-# dbname <- 'imdb'
-# host <- 'mydbinstance-2.c09hulazda1l.us-west-2.rds.amazonaws.com'
-# mydb <- dbConnect(RPostgres::Postgres(),
-#   user=user,
-#   password=password,
-#   dbname=dbname,
-#   host=host)
-# tbls = dbListTables(mydb)
-# for (i in tbls) {
-#   assign(i, collect(tbl(mydb, i)))
-#   save(list=i, file=paste0('./data/imdb/', i, '.Rdata'))
-# }
-
 #http://asbcllc.com/nbastatR/index.html
 
 library(nbastatR)
@@ -67,21 +51,22 @@ library(knitr)
 library(ggpubr)
 library(ggrepel)
 library(janitor)
+library(plotly)
 
 plan(multiprocess) 
 
 # Run only when needed
-game_logs(seasons = 1947:2019, result_types = c("team", "player"))
-dataGameLogsTeam$Team = substring(dataGameLogsTeam$slugMatchup, 1, 3)
+# game_logs(seasons = 1947:2019, result_types = c("team", "player"))
+# dataGameLogsTeam$Team = substring(dataGameLogsTeam$slugMatchup, 1, 3)
 
 # Run when you updated data
-save(df_nba_player_dict, file='df_nba_player_dict.Rdata')
-save(dataGameLogsTeam, file='dataGameLogsTeam.Rdata')
-save(dataGameLogsPlayer, file='dataGameLogsPlayer.Rdata')
+# save(df_nba_player_dict, file='df_nba_player_dict.Rdata')
+# save(dataGameLogsTeam, file='dataGameLogsTeam.Rdata')
+# save(dataGameLogsPlayer, file='dataGameLogsPlayer.Rdata')
 
-# df_nba_player_dict <- load('df_nba_player_dict.Rdata')
-# dataGameLogsTeam <- load('dataGameLogsTeam.Rdata')
-# dataGameLogsPlayer <- load('dataGameLogsPlayer.Rdata')
+load('df_nba_player_dict.Rdata')
+load('dataGameLogsTeam.Rdata')
+load('dataGameLogsPlayer.Rdata')
 
 avg <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$Team), mean)
 colnames(avg)[1] <- "Year"
@@ -128,6 +113,8 @@ avgcombined4 <- avgcombined3 +
                 geom_smooth(data=avg2, aes(x=Year, y=ptsTeam), size=2, colour='purple')
 avgcombined4
 
+ggplotly(p=ggplot2::last_plot())
+
 # library(ggplot2)
 # library(ggpubr)
 # theme_set(theme_pubr())
@@ -151,283 +138,283 @@ avgcombined4
 ```
 
 
-```{r}
-# I don't know the agents
-agentsPlayers <- agents_players(all_agents=TRUE, return_message = TRUE)
-agents_players(agents = c("Jeff Schwartz"))
+<!-- ```{r} -->
+<!-- # I don't know the agents -->
+<!-- agentsPlayers <- agents_players(all_agents=TRUE, return_message = TRUE) -->
+<!-- agents_players(agents = c("Jeff Schwartz")) -->
 
-# Something like all star?
-allNBATeams <- all_nba_teams()
-MJTeams <- allNBATeams %>% filter(allNBATeams$namePlayer == 'Michael Jordan')
+<!-- # Something like all star? -->
+<!-- allNBATeams <- all_nba_teams() -->
+<!-- MJTeams <- allNBATeams %>% filter(allNBATeams$namePlayer == 'Michael Jordan') -->
 
-# All Star Game Information: Geo-mapping possible
-library(dplyr)
-library(nbastatR)
-df_asg <-
-all_star_games()
-df_asg %>% glimpse()
-df_asg %>% count(namePlayerMVP, sort = T)
+<!-- # All Star Game Information: Geo-mapping possible -->
+<!-- library(dplyr) -->
+<!-- library(nbastatR) -->
+<!-- df_asg <- -->
+<!-- all_star_games() -->
+<!-- df_asg %>% glimpse() -->
+<!-- df_asg %>% count(namePlayerMVP, sort = T) -->
 
-# ???
-assign_bref_data(dataGameLogsTeam)
+<!-- # ??? -->
+<!-- assign_bref_data(dataGameLogsTeam) -->
 
-assign_nba_players()
-df_dict_nba_players %>% filter(namePlayer == 'Michael Jordan')
+<!-- assign_nba_players() -->
+<!-- df_dict_nba_players %>% filter(namePlayer == 'Michael Jordan') -->
 
-assign_nba_teams()
+<!-- assign_nba_teams() -->
 
-beyond_the_numbers(count_articles = 10)
+<!-- beyond_the_numbers(count_articles = 10) -->
 
-# Box Scores - can be joined with dataGameLogsTeam
-# Not working
-# box_scores(game_ids = c(21800958))
-# box_scores(game_ids = c(21700002, 21700003), box_score_types = c("Traditional", "Advanced", "Scoring", "Misc", "Usage", "Four Factors", "Tracking"), result_types = c("player", "team"), join_data = TRUE, assign_to_environment = TRUE, return_message = TRUE)
+<!-- # Box Scores - can be joined with dataGameLogsTeam -->
+<!-- # Not working -->
+<!-- # box_scores(game_ids = c(21800958)) -->
+<!-- # box_scores(game_ids = c(21700002, 21700003), box_score_types = c("Traditional", "Advanced", "Scoring", "Misc", "Usage", "Four Factors", "Tracking"), result_types = c("player", "team"), join_data = TRUE, assign_to_environment = TRUE, return_message = TRUE) -->
 
-# Do Nothing
-bref_awards(awards = c("Most Valuable Player", "Rookie of the Year", "Defensive Player of the Year"))
-awards<- bref_awards(awards = c("Most Valuable Player", "Rookie of the Year",
-  "Defensive Player of the Year", "Sixth Man of the Year",
-  "Most Improved Player", "Teammate of the Year",
-  "J. Walter Kennedy Citizenship Award", "NBA Finals Most Valuable Player",
-  "ABA Playoffs Most Valuable Player",
-  "All-Star Game Most Valuable Player", "Comeback Player of the Year",
-  "Sporting News MVP", "Sporting News Rookie of the Year",
-  "Coach of the Year", "Executive of the Year"))
+<!-- # Do Nothing -->
+<!-- bref_awards(awards = c("Most Valuable Player", "Rookie of the Year", "Defensive Player of the Year")) -->
+<!-- awards<- bref_awards(awards = c("Most Valuable Player", "Rookie of the Year", -->
+<!--   "Defensive Player of the Year", "Sixth Man of the Year", -->
+<!--   "Most Improved Player", "Teammate of the Year", -->
+<!--   "J. Walter Kennedy Citizenship Award", "NBA Finals Most Valuable Player", -->
+<!--   "ABA Playoffs Most Valuable Player", -->
+<!--   "All-Star Game Most Valuable Player", "Comeback Player of the Year", -->
+<!--   "Sporting News MVP", "Sporting News Rookie of the Year", -->
+<!--   "Coach of the Year", "Executive of the Year")) -->
 
-# Error
-bref_awards_votes()
+<!-- # Error -->
+<!-- bref_awards_votes() -->
 
-# All players bio. can be mapped to map
-bref_bios( players = c("Michael Jordan","Stephen Curry"),
-player_ids = NULL,
-assign_to_environment = TRUE)
+<!-- # All players bio. can be mapped to map -->
+<!-- bref_bios( players = c("Michael Jordan","Stephen Curry"), -->
+<!-- player_ids = NULL, -->
+<!-- assign_to_environment = TRUE) -->
 
-brefInjuries <- bref_injuries()
+<!-- brefInjuries <- bref_injuries() -->
 
-brefPlayerStats <- bref_players_stats(seasons = 2017:2019, tables = c("advanced", "totals"))
+<!-- brefPlayerStats <- bref_players_stats(seasons = 2017:2019, tables = c("advanced", "totals")) -->
 
-brefPlayerStats %>% filter(namePlayer=='Stephen Curry')
+<!-- brefPlayerStats %>% filter(namePlayer=='Stephen Curry') -->
 
-brefPlayerStats2 <- brefPlayerStats[order(-brefPlayerStats$pct3PRate),] %>% filter(minutesTotals > 2000)
+<!-- brefPlayerStats2 <- brefPlayerStats[order(-brefPlayerStats$pct3PRate),] %>% filter(minutesTotals > 2000) -->
 
-# dataBREFTeamJoined
-bref_teams_stats(seasons = 2017:2018)
+<!-- # dataBREFTeamJoined -->
+<!-- bref_teams_stats(seasons = 2017:2018) -->
 
-coachingStaffs <- coaching_staffs()
+<!-- coachingStaffs <- coaching_staffs() -->
 
-currentSchedule <- current_schedule()
+<!-- currentSchedule <- current_schedule() -->
 
-# Current Standings 2018-2019 season
-currentStandings <- current_standings()
+<!-- # Current Standings 2018-2019 season -->
+<!-- currentStandings <- current_standings() -->
 
-# dataScore * 4
-# Team Leaders
-# Line Score
-# Last Meeting
-# Game Header
-daysScores <- days_scores(game_dates = "2019-03-05", include_standings = F, return_message = T)
+<!-- # dataScore * 4 -->
+<!-- # Team Leaders -->
+<!-- # Line Score -->
+<!-- # Last Meeting -->
+<!-- # Game Header -->
+<!-- daysScores <- days_scores(game_dates = "2019-03-05", include_standings = F, return_message = T) -->
 
-df_dict_awards <- dictionary_bref_awards()
+<!-- df_dict_awards <- dictionary_bref_awards() -->
 
-df_dict_coaches <- dictionary_bref_coaches()
+<!-- df_dict_coaches <- dictionary_bref_coaches() -->
 
-df_dict_players <- dictionary_bref_players()
+<!-- df_dict_players <- dictionary_bref_players() -->
 
-df_dict_teams <- dictionary_bref_teams()
+<!-- df_dict_teams <- dictionary_bref_teams() -->
 
-df_dict_column_names <- dictionary_nba_names()
+<!-- df_dict_column_names <- dictionary_nba_names() -->
 
-df_dict_player_photos <- dictionary_player_photos()
+<!-- df_dict_player_photos <- dictionary_player_photos() -->
 
-draftCombines <- draft_combines(years = c(2001:2019), nest_data = T)
+<!-- draftCombines <- draft_combines(years = c(2001:2019), nest_data = T) -->
 
-library(dplyr)
-df_drafts <-
-drafts(draft_years = 1983:2019, nest_data = FALSE, return_message = TRUE)
+<!-- library(dplyr) -->
+<!-- df_drafts <- -->
+<!-- drafts(draft_years = 1983:2019, nest_data = FALSE, return_message = TRUE) -->
 
-## Where do top 5 picks since 1983 come from?
+<!-- ## Where do top 5 picks since 1983 come from? -->
 
-df_drafts %>%
-filter(numberPickOverall <= 5) %>%
-count(nameOrganizationFrom, sort = T)
+<!-- df_drafts %>% -->
+<!-- filter(numberPickOverall <= 5) %>% -->
+<!-- count(nameOrganizationFrom, sort = T) -->
 
-# Per game summary of all players
-fanduelSummary <- fanduel_summary(game_ids = c(21700002), nest_data = F, return_message = T)
+<!-- # Per game summary of all players -->
+<!-- fanduelSummary <- fanduel_summary(game_ids = c(21700002), nest_data = F, return_message = T) -->
 
-franchiseLeadersGSW <- franchise_leaders(teams = "Golden State Warriors", modes = c("Totals"))
+<!-- franchiseLeadersGSW <- franchise_leaders(teams = "Golden State Warriors", modes = c("Totals")) -->
 
-# NOT RUN {
-game_logs(seasons = 2019, result_types = c("team", "player"))
-# }
+<!-- # NOT RUN { -->
+<!-- game_logs(seasons = 2019, result_types = c("team", "player")) -->
+<!-- # } -->
 
-# ???
-gather_data(daysScoreTeamLeadersNBA, variable_name = "item", numeric_ids = c("^id"),
-  use_logical_keys = TRUE, use_factor_keys = TRUE,
-  unite_columns = NULL, separate_columns = NULL,
-  use_date_keys = FALSE, remove_na = TRUE)
+<!-- # ??? -->
+<!-- gather_data(daysScoreTeamLeadersNBA, variable_name = "item", numeric_ids = c("^id"), -->
+<!--   use_logical_keys = TRUE, use_factor_keys = TRUE, -->
+<!--   unite_columns = NULL, separate_columns = NULL, -->
+<!--   use_date_keys = FALSE, remove_na = TRUE) -->
 
-hoops_hype_salary <- hoops_hype_salary_summary()
+<!-- hoops_hype_salary <- hoops_hype_salary_summary() -->
 
-# Error
-library(dplyr)
-df_salaries <-
-hoopshype_salaries(all_teams = TRUE, nest_data = F, return_message = T)
- ## By Expiring Salary Type and Team
- df_salaries %>% group_by(slugSeason,  nameTeam, isFinalSeason) %>%
- summarise(expiringSalaries = sum(amountContractMil, na.rm = T) / 1000000) %>%
- arrange(nameTeam)
+<!-- # Error -->
+<!-- library(dplyr) -->
+<!-- df_salaries <- -->
+<!-- hoopshype_salaries(all_teams = TRUE, nest_data = F, return_message = T) -->
+<!--  ## By Expiring Salary Type and Team -->
+<!--  df_salaries %>% group_by(slugSeason,  nameTeam, isFinalSeason) %>% -->
+<!--  summarise(expiringSalaries = sum(amountContractMil, na.rm = T) / 1000000) %>% -->
+<!--  arrange(nameTeam) -->
 
-# Relationship between points and 3pt
-metricsLeader <- metrics_leaders(seasons = 2000:2019,
- metric = "pts",
- season_types = "Regular Season",
- modes = "Totals",
- return_message = T)
+<!-- # Relationship between points and 3pt -->
+<!-- metricsLeader <- metrics_leaders(seasons = 2000:2019, -->
+<!--  metric = "pts", -->
+<!--  season_types = "Regular Season", -->
+<!--  modes = "Totals", -->
+<!--  return_message = T) -->
 
-franchiseHistory <- nba_franchise_history()
+<!-- franchiseHistory <- nba_franchise_history() -->
 
-# salaries & 3pt
-nbaInsiderSalaries <- nba_insider_salaries(assume_player_opt_out = T, assume_team_doesnt_exercise = T, return_message = TRUE)
+<!-- # salaries & 3pt -->
+<!-- nbaInsiderSalaries <- nba_insider_salaries(assume_player_opt_out = T, assume_team_doesnt_exercise = T, return_message = TRUE) -->
 
-nba_player_ids(players = c("Mitch Richmond", "Kyle Kuzma"))
+<!-- nba_player_ids(players = c("Mitch Richmond", "Kyle Kuzma")) -->
 
-# nbaPlayers == df_dict_nba_players
-nbaPlayers <- nba_players()
+<!-- # nbaPlayers == df_dict_nba_players -->
+<!-- nbaPlayers <- nba_players() -->
 
-# Error
-nba_stats_api_items()
+<!-- # Error -->
+<!-- nba_stats_api_items() -->
 
-# nbaTeams == df_dict_nba_teams
-nbaTeams <- nba_teams()
+<!-- # nbaTeams == df_dict_nba_teams -->
+<!-- nbaTeams <- nba_teams() -->
 
-nba_teams_ids(teams = c("Brooklyn Nets", "Denver Nuggets"))
+<!-- nba_teams_ids(teams = c("Brooklyn Nets", "Denver Nuggets")) -->
 
-nbaTeamsSeasons <- nba_teams_seasons()
+<!-- nbaTeamsSeasons <- nba_teams_seasons() -->
 
-nbadraftnet <- nbadraftnet_mock_drafts(years = 2012:2017,
-  merge_nba_data = TRUE,
-  nest_data = F,
-  return_message = T)
+<!-- nbadraftnet <- nbadraftnet_mock_drafts(years = 2012:2017, -->
+<!--   merge_nba_data = TRUE, -->
+<!--   nest_data = F, -->
+<!--   return_message = T) -->
 
-nbastatsAPIParameters <- nbastats_api_parameters(1:3)
+<!-- nbastatsAPIParameters <- nbastats_api_parameters(1:3) -->
 
-playByPlay <- play_by_play(game_ids = c(21700002), nest_data = F, return_message = T)
+<!-- playByPlay <- play_by_play(game_ids = c(21700002), nest_data = F, return_message = T) -->
 
-playerProfiles <- player_profiles(player_ids = c(203500, 1628384),
-  players = c("Michael Jordan", "Caris LeVert", "Jarrett Allen", "James Harden"),
-  nest_data = FALSE,
-  return_message = TRUE)
+<!-- playerProfiles <- player_profiles(player_ids = c(203500, 1628384), -->
+<!--   players = c("Michael Jordan", "Caris LeVert", "Jarrett Allen", "James Harden"), -->
+<!--   nest_data = FALSE, -->
+<!--   return_message = TRUE) -->
 
-library(dplyr)
-df_players_agents <- players_agents()
-df_players_agents %>% glimpse()
+<!-- library(dplyr) -->
+<!-- df_players_agents <- players_agents() -->
+<!-- df_players_agents %>% glimpse() -->
 
-playersAwards <- players_awards(players = c( "Charles Oakley", "Gary Melchionni"),
-  player_ids = c(893, 76375),
-  return_message = T,
-  nest_data = F)
+<!-- playersAwards <- players_awards(players = c( "Charles Oakley", "Gary Melchionni"), -->
+<!--   player_ids = c(893, 76375), -->
+<!--   return_message = T, -->
+<!--   nest_data = F) -->
 
-playersBios <- players_bios(players = c("Michael Jordan", "Caris LeVert", "Jarrett Allen", "James Harden"))
+<!-- playersBios <- players_bios(players = c("Michael Jordan", "Caris LeVert", "Jarrett Allen", "James Harden")) -->
 
-playersCareers <- players_careers(players = c("Joe Harris", "Myles Turner", "Spencer Dinwiddie"),
-modes = c("Totals", "PerGame"))
+<!-- playersCareers <- players_careers(players = c("Joe Harris", "Myles Turner", "Spencer Dinwiddie"), -->
+<!-- modes = c("Totals", "PerGame")) -->
 
-players_rotowire(players = c( "Jarrett Allen", "DeMarre Carroll", "Allen Crabbe"))
+<!-- players_rotowire(players = c( "Jarrett Allen", "DeMarre Carroll", "Allen Crabbe")) -->
 
-playersTables <- players_tables(players = c("Caris LeVert", "Joe Harris"), tables =  c("year over year", "passes", "game splits"),   modes = c("PerGame", "Totals"), measures = c("Base", "Advanced"), assign_to_environment = TRUE)
+<!-- playersTables <- players_tables(players = c("Caris LeVert", "Joe Harris"), tables =  c("year over year", "passes", "game splits"),   modes = c("PerGame", "Totals"), measures = c("Base", "Advanced"), assign_to_environment = TRUE) -->
 
-playoffPictures <- playoff_pictures(seasons = 2015:2018,
-  assign_to_environment = TRUE,
-  include_numeric_records = T)
+<!-- playoffPictures <- playoff_pictures(seasons = 2015:2018, -->
+<!--   assign_to_environment = TRUE, -->
+<!--   include_numeric_records = T) -->
 
-# Error
-pst_transaction(person = NULL, team = "Nets")
+<!-- # Error -->
+<!-- pst_transaction(person = NULL, team = "Nets") -->
 
-# Summarize data per minute?
-scale_per_minute(data, scale_columns = NULL)
+<!-- # Summarize data per minute? -->
+<!-- scale_per_minute(data, scale_columns = NULL) -->
 
-seasonPlayers <- seasons_players(2010:2017, nest_data = T, return_message = T)
+<!-- seasonPlayers <- seasons_players(2010:2017, nest_data = T, return_message = T) -->
 
-# Error
-df_rosters <- seasons_rosters(2015:2018)
+<!-- # Error -->
+<!-- df_rosters <- seasons_rosters(2015:2018) -->
 
-### Mean Age by Season and Team
-df_rosters %>%
-  group_by(slugSeason, slugTeam) %>%
-  summarise(ageMean = mean(agePlayer)) %>%
-  arrange(ageMean) %>%
-  ungroup()
+<!-- ### Mean Age by Season and Team -->
+<!-- df_rosters %>% -->
+<!--   group_by(slugSeason, slugTeam) %>% -->
+<!--   summarise(ageMean = mean(agePlayer)) %>% -->
+<!--   arrange(ageMean) %>% -->
+<!--   ungroup() -->
 
-# Error
-seasonsSchedule <- seasons_schedule(seasons = c(2012, 2018))
+<!-- # Error -->
+<!-- seasonsSchedule <- seasons_schedule(seasons = c(2012, 2018)) -->
 
-# Summer League
-sl_players()
-sl_teams()
+<!-- # Summer League -->
+<!-- sl_players() -->
+<!-- sl_teams() -->
 
-spread_data(data, variable_name = "item", value_name = "value",
-  perserve_order = TRUE, unite_columns = NULL,
-  separate_columns = NULL)
+<!-- spread_data(data, variable_name = "item", value_name = "value", -->
+<!--   perserve_order = TRUE, unite_columns = NULL, -->
+<!--   separate_columns = NULL) -->
 
-# Error
-standings <- standings(seasons = 2015:2018, season_types = "Regular Season", resolve_records = T, nest_data = F, return_message = T)
+<!-- # Error -->
+<!-- standings <- standings(seasons = 2015:2018, season_types = "Regular Season", resolve_records = T, nest_data = F, return_message = T) -->
 
-summarise_per_minute(data, id_columns = c("idPlayerSeason"),
-  scale_columns = c("pts", "fg", "ast", "tov", "blk", "stl", "drb",
-  "trb", "orb", "ft", "pf", "countLayupsShooting", "countDunks", "hlf"))
+<!-- summarise_per_minute(data, id_columns = c("idPlayerSeason"), -->
+<!--   scale_columns = c("pts", "fg", "ast", "tov", "blk", "stl", "drb", -->
+<!--   "trb", "orb", "ft", "pf", "countLayupsShooting", "countDunks", "hlf")) -->
 
-# Error
-synergy(seasons = 2019, result_types = c("player", "team"), season_types = c("Regular Season"), set_types = c("offensive", "defensive"), categories = c("Transition", "Isolation", "PRBallHandler", "PRRollman", "Postup",  "Spotup", "Handoff", "Cut", "OffScreen", "OffRebound", "Misc"), results = 500, assign_to_environment = TRUE, return_wide = F, return_message = TRUE)
+<!-- # Error -->
+<!-- synergy(seasons = 2019, result_types = c("player", "team"), season_types = c("Regular Season"), set_types = c("offensive", "defensive"), categories = c("Transition", "Isolation", "PRBallHandler", "PRRollman", "Postup",  "Spotup", "Handoff", "Cut", "OffScreen", "OffRebound", "Misc"), results = 500, assign_to_environment = TRUE, return_wide = F, return_message = TRUE) -->
 
-# Error
-team_season_roster(team = "Denver Nuggets", season = 1991)
+<!-- # Error -->
+<!-- team_season_roster(team = "Denver Nuggets", season = 1991) -->
 
-teamsAnnualStats <- teams_annual_stats(all_active_teams = T,
-  modes = c("Totals"),
-  return_message = TRUE,
-  nest_data =F)
+<!-- teamsAnnualStats <- teams_annual_stats(all_active_teams = T, -->
+<!--   modes = c("Totals"), -->
+<!--   return_message = TRUE, -->
+<!--   nest_data =F) -->
 
-# Error
-teamsCoaches <- teams_coaches(2018:2019)
+<!-- # Error -->
+<!-- teamsCoaches <- teams_coaches(2018:2019) -->
 
-# Error
-teamsDetails <- teams_details(all_teams = TRUE, assign_to_environment = TRUE)
+<!-- # Error -->
+<!-- teamsDetails <- teams_details(all_teams = TRUE, assign_to_environment = TRUE) -->
 
-teamsPlayersStats <- teams_players_stats(seasons = 2018, types = c("player", "team"),
- modes = c("PerGame", "Totals"),
- tables = c("general", "defense", "clutch", "hustle", "shots", "shot locations"))
+<!-- teamsPlayersStats <- teams_players_stats(seasons = 2018, types = c("player", "team"), -->
+<!--  modes = c("PerGame", "Totals"), -->
+<!--  tables = c("general", "defense", "clutch", "hustle", "shots", "shot locations")) -->
 
-# interesting team rankings
-teamsRankings <- teams_rankings(seasons = 2019)
+<!-- # interesting team rankings -->
+<!-- teamsRankings <- teams_rankings(seasons = 2019) -->
 
-# too long
-teamsRosters <- teams_rosters(seasons = 2010:2018, nest_data = F, return_message = T)
+<!-- # too long -->
+<!-- teamsRosters <- teams_rosters(seasons = 2010:2018, nest_data = F, return_message = T) -->
 
-# Error
-teamsRotowire <- teams_rotowire(teams = "Brooklyn Nets")
+<!-- # Error -->
+<!-- teamsRotowire <- teams_rotowire(teams = "Brooklyn Nets") -->
 
-# too long
-teamsSeasonsInfo <- teams_seasons_info(teams = "Brooklyn Nets", seasons = c(1984, 1990, 1995, 2018), season_types = "Regular Season")
+<!-- # too long -->
+<!-- teamsSeasonsInfo <- teams_seasons_info(teams = "Brooklyn Nets", seasons = c(1984, 1990, 1995, 2018), season_types = "Regular Season") -->
 
-# too long
-teamsShots <- teams_shots(teams = "Golden State Warriors", seasons = 2018)
-teamsTables <- teams_tables(teams = c("Brooklyn Nets", "New York Knicks"),
- seasons = 2017:2018, tables = c("splits", "shooting"), measures = "Base", modes = c("PerGame", "Totals"))
+<!-- # too long -->
+<!-- teamsShots <- teams_shots(teams = "Golden State Warriors", seasons = 2018) -->
+<!-- teamsTables <- teams_tables(teams = c("Brooklyn Nets", "New York Knicks"), -->
+<!--  seasons = 2017:2018, tables = c("splits", "shooting"), measures = "Base", modes = c("PerGame", "Totals")) -->
 
-transactions <- transactions()
+<!-- transactions <- transactions() -->
 
-validate_nba_player_photos(sleep_time = 2)
+<!-- validate_nba_player_photos(sleep_time = 2) -->
 
-widen_bref_data(data)
+<!-- widen_bref_data(data) -->
 
-win_probability(game_ids = c(21700002, 21700005), filter_non_plays = T,
-nest_data = FALSE,
-return_message = TRUE)
+<!-- win_probability(game_ids = c(21700002, 21700005), filter_non_plays = T, -->
+<!-- nest_data = FALSE, -->
+<!-- return_message = TRUE) -->
 
 
 
 
 
-```
-\normalsize
+<!-- ``` -->
+<!-- \normalsize -->
 
