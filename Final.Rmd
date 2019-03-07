@@ -3,9 +3,9 @@ title: "Problem Set 6"
 author: "Subeom Lee"
 date: "`r Sys.Date()`"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 linkcolor: cyan
 fontsize: 10pt
 colorlinks: yes
@@ -113,7 +113,7 @@ avgcombined4 <- avgcombined3 +
                 geom_smooth(data=avg2, aes(x=Year, y=ptsTeam), size=2, colour='purple')
 avgcombined4
 
-ggplotly(p=ggplot2::last_plot())
+# ggplotly(p=ggplot2::last_plot())
 
 # library(ggplot2)
 # library(ggpubr)
