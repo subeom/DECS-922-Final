@@ -82,6 +82,10 @@ avgplot
 
 avg2 <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason), mean)
 colnames(avg2)[1] <- "Year"
+min2 <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason), min)
+colnames(min2)[1] <- "Year"
+max2 <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason), max)
+colnames(max2)[1] <- "Year"
 
 avgplot2 <- avg2 %>%
               filter(Year >= 1986) %>%
@@ -94,11 +98,27 @@ avgplot3 <- avg2 %>%
               geom_path(colour='red', size=2)
 avgplot3
 
+avgminmax <- ggplot() +
+                geom_line(data=min2, aes(x=Year, y=pctFG3Team*100), size=1, colour='green') +
+                geom_line(data=max2, aes(x=Year, y=pctFG2Team*100), size=1, colour='red') +
+                geom_smooth(data=avg2, aes(x=Year, y=pctFG3Team*100), size=2, colour='black')
+avgminmax
+
+avg1986 <- avg %>% filter(Year>=1986)
+avg21986 <- avg2 %>% filter(Year>=1986)
+
+avgcombinedall <- ggplot() +
+                geom_line(data=avg1986, aes(x=Year, y=pctFG3Team*100, colour=Team), size=0.5, show.legend=FALSE) +
+                geom_line(data=avg1986, aes(x=Year, y=pctFG2Team*100, colour=Team), size=0.5, show.legend=FALSE) +
+                geom_line(data=avg21986, aes(x=Year, y=pctFG3Team*100), size=2, colour='black')+
+                geom_line(data=avg21986, aes(x=Year, y=pctFG2Team*100), size=2, colour='black')
+avgcombinedall
+
 avgfiltered <- avg %>% filter(Team %in% c('GSW', 'CHI', 'HOU', 'LAL'))
 
 avgcombined <- ggplot() +
-                geom_line(data=avgfiltered, aes(x=Year, y=pctFG3Team*100, colour=Team), size=1) +
-                geom_line(data=avgfiltered, aes(x=Year, y=pctFG2Team*100, colour=Team), size=1) +
+                geom_line(data=avgfiltered, aes(x=Year, y=pctFG3Team*100, colour=Team), size=1, show.legend=FALSE) +
+                geom_line(data=avgfiltered, aes(x=Year, y=pctFG2Team*100, colour=Team), size=1, show.legend=FALSE) +
                 geom_smooth(data=avg2, aes(x=Year, y=pctFG3Team*100), size=2, colour='black')
 avgcombined
 
