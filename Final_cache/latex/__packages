@@ -20,3 +20,4 @@ dplyr
 stringr
 forcats
 plotly
+reticulate

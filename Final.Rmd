@@ -19,6 +19,7 @@ library(knitr)
 library(ggpubr)
 library(ggrepel)
 library(janitor)
+library(reticulate)
 opts_chunk$set(echo=TRUE,
                cache.lazy=FALSE,
                collapse=TRUE,
@@ -52,6 +53,7 @@ library(ggpubr)
 library(ggrepel)
 library(janitor)
 library(plotly)
+library(reticulate)
 
 plan(multiprocess) 
 
@@ -64,78 +66,79 @@ plan(multiprocess)
 # save(dataGameLogsTeam, file='dataGameLogsTeam.Rdata')
 # save(dataGameLogsPlayer, file='dataGameLogsPlayer.Rdata')
 
-load('df_nba_player_dict.Rdata')
-load('dataGameLogsTeam.Rdata')
-load('dataGameLogsPlayer.Rdata')
+# load('df_nba_player_dict.Rdata')
+# load('dataGameLogsTeam.Rdata')
+# load('dataGameLogsPlayer.Rdata')
+
+load('BaseEnvironment.Rdata')
 
 
 
-
-avg <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$Team), mean)
-colnames(avg)[1] <- "Year"
-colnames(avg)[2] <- "Team"
-
-
-
-avgplot <- avg %>%
-            filter(Team %in% c('GSW', 'CHI', 'HOU', 'LAL')) %>%
-            ggplot(aes(x=Year, y=pctFG3Team, colour=Team)) +
-            geom_line()
-avgplot
-
-avg2 <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason), mean)
-colnames(avg2)[1] <- "Year"
-min2 <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason), min)
-colnames(min2)[1] <- "Year"
-max2 <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason), max)
-colnames(max2)[1] <- "Year"
-
-avgplot2 <- avg2 %>%
-              filter(Year >= 1986) %>%
-              ggplot(aes(x=Year, y=pctFG3Team*100)) +
-              geom_path(colour='violet', size=2)
-avgplot2
-
-avgplot3 <- avg2 %>%
-              ggplot(aes(x=Year, y=pctFG2Team*100)) +
-              geom_path(colour='red', size=2)
-avgplot3
-
-avgminmax <- ggplot() +
-                geom_line(data=min2, aes(x=Year, y=pctFG3Team*100), size=1, colour='green') +
-                geom_line(data=max2, aes(x=Year, y=pctFG2Team*100), size=1, colour='red') +
-                geom_smooth(data=avg2, aes(x=Year, y=pctFG3Team*100), size=2, colour='black')
-avgminmax
-
-avg1986 <- avg %>% filter(Year>=1986)
-avg21986 <- avg2 %>% filter(Year>=1986)
-
-avgcombinedall <- ggplot() +
-                geom_line(data=avg1986, aes(x=Year, y=pctFG3Team*100, colour=Team), size=0.5, show.legend=FALSE) +
-                geom_line(data=avg1986, aes(x=Year, y=pctFG2Team*100, colour=Team), size=0.5, show.legend=FALSE) +
-                geom_line(data=avg21986, aes(x=Year, y=pctFG3Team*100), size=2, colour='black')+
-                geom_line(data=avg21986, aes(x=Year, y=pctFG2Team*100), size=2, colour='black')
-avgcombinedall
-
-avgfiltered <- avg %>% filter(Team %in% c('GSW', 'CHI', 'HOU', 'LAL'))
-
-avgcombined <- ggplot() +
-                geom_line(data=avgfiltered, aes(x=Year, y=pctFG3Team*100, colour=Team), size=1, show.legend=FALSE) +
-                geom_line(data=avgfiltered, aes(x=Year, y=pctFG2Team*100, colour=Team), size=1, show.legend=FALSE) +
-                geom_smooth(data=avg2, aes(x=Year, y=pctFG3Team*100), size=2, colour='black')
-avgcombined
-
-avgcombined2 <- avgcombined +
-                geom_smooth(data=avg2, aes(x=Year, y=pctFG2Team*100), size=2, colour='red')
-avgcombined2
-
-avgcombined3 <- avgcombined2 +
-                geom_smooth(data=avg2, aes(x=Year, y=pctFTTeam*100), size=2, colour='green')
-avgcombined3
-
-avgcombined4 <- avgcombined3 +
-                geom_smooth(data=avg2, aes(x=Year, y=ptsTeam), size=2, colour='purple')
-avgcombined4
+# avg <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$Team), mean)
+# colnames(avg)[1] <- "Year"
+# colnames(avg)[2] <- "Team"
+# 
+# 
+# 
+# avgplot <- avg %>%
+#             filter(Team %in% c('GSW', 'CHI', 'HOU', 'LAL')) %>%
+#             ggplot(aes(x=Year, y=pctFG3Team, colour=Team)) +
+#             geom_line()
+# avgplot
+# 
+# avg2 <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason), mean)
+# colnames(avg2)[1] <- "Year"
+# min2 <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason), min)
+# colnames(min2)[1] <- "Year"
+# max2 <- aggregate(dataGameLogsTeam[, 24:46], list(dataGameLogsTeam$yearSeason), max)
+# colnames(max2)[1] <- "Year"
+# 
+# avgplot2 <- avg2 %>%
+#               filter(Year >= 1986) %>%
+#               ggplot(aes(x=Year, y=pctFG3Team*100)) +
+#               geom_path(colour='violet', size=2)
+# avgplot2
+# 
+# avgplot3 <- avg2 %>%
+#               ggplot(aes(x=Year, y=pctFG2Team*100)) +
+#               geom_path(colour='red', size=2)
+# avgplot3
+# 
+# avgminmax <- ggplot() +
+#                 geom_line(data=min2, aes(x=Year, y=pctFG3Team*100), size=1, colour='green') +
+#                 geom_line(data=max2, aes(x=Year, y=pctFG2Team*100), size=1, colour='red') +
+#                 geom_smooth(data=avg2, aes(x=Year, y=pctFG3Team*100), size=2, colour='black')
+# avgminmax
+# 
+# avg1986 <- avg %>% filter(Year>=1986)
+# avg21986 <- avg2 %>% filter(Year>=1986)
+# 
+# avgcombinedall <- ggplot() +
+#                 geom_line(data=avg1986, aes(x=Year, y=pctFG3Team*100, colour=Team), size=0.5, show.legend=FALSE) +
+#                 geom_line(data=avg1986, aes(x=Year, y=pctFG2Team*100, colour=Team), size=0.5, show.legend=FALSE) +
+#                 geom_line(data=avg21986, aes(x=Year, y=pctFG3Team*100), size=2, colour='black')+
+#                 geom_line(data=avg21986, aes(x=Year, y=pctFG2Team*100), size=2, colour='black')
+# avgcombinedall
+# 
+# avgfiltered <- avg %>% filter(Team %in% c('GSW', 'CHI', 'HOU', 'LAL'))
+# 
+# avgcombined <- ggplot() +
+#                 geom_line(data=avgfiltered, aes(x=Year, y=pctFG3Team*100, colour=Team), size=1, show.legend=FALSE) +
+#                 geom_line(data=avgfiltered, aes(x=Year, y=pctFG2Team*100, colour=Team), size=1, show.legend=FALSE) +
+#                 geom_smooth(data=avg2, aes(x=Year, y=pctFG3Team*100), size=2, colour='black')
+# avgcombined
+# 
+# avgcombined2 <- avgcombined +
+#                 geom_smooth(data=avg2, aes(x=Year, y=pctFG2Team*100), size=2, colour='red')
+# avgcombined2
+# 
+# avgcombined3 <- avgcombined2 +
+#                 geom_smooth(data=avg2, aes(x=Year, y=pctFTTeam*100), size=2, colour='green')
+# avgcombined3
+# 
+# avgcombined4 <- avgcombined3 +
+#                 geom_smooth(data=avg2, aes(x=Year, y=ptsTeam), size=2, colour='purple')
+# avgcombined4
 
 # ggplotly(p=ggplot2::last_plot())
 
@@ -352,20 +355,355 @@ Yes. However, pctfg2 is more relevant than pctfg3
 -	Focus on three point shooting is a strategy that started fairly recently, we can create a map to show where this strategy initially emerged and how fast it spreaded across the entire country.
 
 
-```{r}
-```
 
 # Player level questions
 
--.	Players who are good at 3-pointers are also good at 2-pointers or free throws?
+```{r}
+dataGameLogsPlayer1986 <- dataGameLogsPlayer %>% filter(yearSeason >= 1986)
+
+fgyearplayer <- aggregate(dataGameLogsPlayer1986[, 19:26], list(dataGameLogsPlayer1986$yearSeason, dataGameLogsPlayer1986$namePlayer), sum)
+colnames(fgyearplayer)[1] <- "Year"
+colnames(fgyearplayer)[2] <- "Player"
+fgyearplayer$pctFG = NULL
+fgyearplayer$pctFG3 = NULL
+
+fgyearplayer$pctfg3 <- fgyearplayer$fg3m / fgyearplayer$fg3a * 100
+fgyearplayer$pctfg2 <- fgyearplayer$fgm / fgyearplayer$fga * 100
+fgyearplayer$pctft <- fgyearplayer$ftm / fgyearplayer$fta * 100
+
+# Meaningless...
+yearplayer <- aggregate(fgyearplayer[,5], list(fgyearplayer$Player), sum)
+colnames(yearplayer)[1] <- "Player"
+colnames(yearplayer)[2] <- "totalfg3m"
+ggplot(yearplayer, aes(totalfg3m)) + geom_histogram()
+yearplayer100 <- yearplayer %>% filter (totalfg3m>=100)
+
+xaxisbreaks <- seq(1985, 2019, by=3)
+yaxisbreaks <- seq(20, 50, by=5)
+
+fgyearplayer100 <- fgyearplayer %>% filter(Player %in% yearplayer100$Player)
+plotYearPlayer <- ggplot() +
+  geom_line(data=fgyearplayer100, aes(x=Year, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
+  geom_line(data=fgyearplayer100, aes(x=Year, y=pctfg2, colour=Player), size=1, show.legend = FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point shot success rate by player') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(0, 100), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+plotYearPlayer
+# Meaningless...
+
+fgplayer <- aggregate(dataGameLogsPlayer1986[, 19:26], list(dataGameLogsPlayer1986$namePlayer), sum)
+colnames(fgplayer)[1] <- "Player"
+fgplayer$pctFG = NULL
+fgplayer$pctFG3 = NULL
+
+fgplayer$pctfg3 <- fgplayer$fg3m / fgplayer$fg3a * 100
+fgplayer$pctfg2 <- fgplayer$fgm / fgplayer$fga * 100
+fgplayer$pctft <- fgplayer$ftm / fgplayer$fta * 100
+
+fgplayer <- fgplayer[order(-fgplayer$pctfg3),]
+fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
+
+```
+
+```{python}
+import pandas as pd
+
+fgplayer = r.fgplayer
+
+fgplayer['firstYear'] = 2019
+fgplayer['lastYear'] = 1986
+
+print(fgplayer.head(5))
+print(fgplayer.tail(5))
+
+i=0
+
+for player in fgplayer.values:
+  min = player[-2]
+  max = player[-1]
+  for yp in r.fgyearplayer.values:
+    if player[0] == yp[1]:
+      if max < yp[0]: max = yp[0]
+      if min > yp[0]: min = yp[0]
+  fgplayer.iloc[i,-1]=max
+  fgplayer.iloc[i,-2]=min
+  i += 1
+  
+print(fgplayer.head(5))
+print(fgplayer.tail(5))
+
+```
+
+```{r}
+fgplayer <- py$fgplayer
+fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
+fgplayer1000 <- fgplayer100 %>% filter(fg3m >= 1000)
+fgplayer2000 <- fgplayer1000 %>% filter(fg3m >= 2000)
+
+
+xaxisbreaks <- seq(1985, 2019, by=3)
+yaxisbreaks <- seq(20, 50, by=5)
+
+plotPlayer100 <- ggplot() +
+  geom_linerange(data=fgplayer100, aes(x=pctfg3, y=lastYear, ymin=firstYear, ymax=lastYear, colour=Player), size=1, show.legend = FALSE) +
+  # geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
+  # geom_line
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point success rate by player and year') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_x_continuous(limits=c(20, 50), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_y_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+plotPlayer100
+
+
+xaxisbreaks <- seq(1985, 2019, by=3)
+yaxisbreaks <- seq(30, 45, by=1)
+
+fgplayer1000 <- fgplayer100 %>% filter (fg3m >= 1000)
+plotPlayer1000 <- ggplot() +
+  geom_pointrange(data=fgplayer1000, aes(x=pctfg3, y=lastYear, ymin=firstYear, ymax=lastYear, colour=Player), size=1, show.legend = FALSE) +
+  # geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
+  # geom_line
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point success rate by player and year') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_x_continuous(limits=c(30, 45), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_y_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+plotPlayer1000
+
+
+```
+
+```{r}
+xaxisbreaks <- seq(1985, 2019, by=3)
+yaxisbreaks <- seq(30, 45, by=1)
+
+plotPlayer100 <- ggplot() +
+  geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, size=fg3m+fg3a, colour=Player), show.legend = FALSE) +
+  # geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
+  # geom_line
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point success rate by player and year') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(30, 45), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+plotPlayer100
+
+plotPlayer1000 <- ggplot() +
+  geom_point(data=fgplayer1000, aes(x=lastYear, y=pctfg3, size=fg3m+fg3a, colour=Player), show.legend = FALSE) +
+  # geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
+  # geom_line
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point success rate by player and year') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(30, 45), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+plotPlayer1000
+
+plotPlayer2000 <- ggplot() +
+  geom_point(data=fgplayer2000, aes(x=lastYear, y=pctfg3, size=fg3m+fg3a, colour=Player), show.legend = FALSE) +
+  # geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
+  # geom_line
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point success rate by player and year') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(30, 45), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+plotPlayer2000
+```
+
+Above graph shows more players are trying 3 point shots than before. even though the average success rate is similar.
+
+
+Q4. Players who are good at 3-pointers are also good at 2-pointers or free throws?
+
+By regression.
+
+Players who are good at free throws tend to be good at 3-pointers.
+However, 2-point field goal success rate is not related with 3-point field goal success rate!!!
+Why?
+
+```{r}
+linearModel <- lm(pctfg3 ~ pctfg2, data=fgplayer100)
+summary(linearModel)
+
+linearModel2 <- lm(fg3m ~ fgm, data=fgplayer100)
+summary(linearModel2)
+
+linearModel3 <- lm(fg3a ~ fga, data=fgplayer100)
+summary(linearModel3)
+
+linearModel4 <- lm(fg3a ~ fga + fta, data=fgplayer100)
+summary(linearModel4)
+
+linearModel5 <- lm(pctfg3 ~ pctft, data=fgplayer100)
+summary(linearModel5)
+
+linearModel6 <- lm(pctfg2 ~ pctft, data=fgplayer100)
+summary(linearModel6)
+
+linearModel7 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer100)
+summary(linearModel7)
+```
+
+When we look at all the players, 2-pointers and 3-pointers are reverse-related. Maybe because of dunk shots?
+
+```{r}
+linearModel7 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer)
+summary(linearModel7)
+```
+Best players (more than 1,000 career 3-point field goals) are good at 2-pointers as well!!!
+
+```{r}
+linearModel7 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer1000)
+summary(linearModel7)
+
+linearModel8 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer2000)
+summary(linearModel8)
+```
 
 -. Are there any relationship between players’ ages and 3-pointers? Both total and average.
 
+```{r}
+fgyearplayer100 <- fgyearplayer %>% filter(Player %in% fgplayer100$Player)
+fgyearplayer1000 <- fgyearplayer100 %>% filter(Player %in% fgplayer1000$Player)
+fgyearplayer2000 <- fgyearplayer1000 %>% filter(Player %in% fgplayer2000$Player)
+
+xaxisbreaks <- seq(1985, 2019, by=3)
+yaxisbreaks <- seq(0, 100, by=5)
+
+plotYearPlayer100 <- ggplot() +
+  geom_line(data=fgyearplayer100, aes(x=Year, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
+  geom_line(data=fgyearplayer100, aes(x=Year, y=pctfg2, colour=Player), size=1, linetype="dotted", show.legend = FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point shot success rate by player') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(0, 100), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+plotYearPlayer100
+
+
+xaxisbreaks <- seq(1985, 2019, by=3)
+yaxisbreaks <- seq(0, 70, by=5)
+
+plotYearPlayer1000 <- ggplot() +
+  geom_line(data=fgyearplayer1000, aes(x=Year, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
+  geom_line(data=fgyearplayer1000, aes(x=Year, y=pctfg2, colour=Player), size=1, linetype="dotted", show.legend = FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point shot success rate by player') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(0, 70), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+plotYearPlayer1000
+
+xaxisbreaks <- seq(1985, 2019, by=3)
+yaxisbreaks <- seq(25, 55, by=5)
+
+plotYearPlayer2000 <- ggplot() +
+  geom_line(data=fgyearplayer2000, aes(x=Year, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
+  geom_line(data=fgyearplayer2000, aes(x=Year, y=pctfg2, colour=Player), size=1, linetype="dotted", show.legend = FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point shot success rate by player') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(25, 55), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+plotYearPlayer2000
+
+
+```
+
+Let's regress.
+
+```{r}
+fgyearplayerjoined <- left_join(fgyearplayer, fgplayer, by=c("Player" = "Player"))
+fgyearplayerjoined$career = fgyearplayerjoined$Year - fgyearplayerjoined$firstYear + 1
+
+fgyearplayerjoined100 <- fgyearplayerjoined %>% filter(Player %in% fgplayer100$Player)
+fgyearplayerjoined1000 <- fgyearplayerjoined100 %>% filter(Player %in% fgplayer1000$Player)
+fgyearplayerjoined2000 <- fgyearplayerjoined1000 %>% filter(Player %in% fgplayer2000$Player)
+
+linearModel <- lm(pctfg3.x ~ career, data=fgyearplayerjoined2000)
+summary(linearModel)
+linearModel2 <- lm(pctfg3.x ~ career, data=fgyearplayerjoined1000)
+summary(linearModel2)
+linearModel3 <- lm(pctfg3.x ~ career, data=fgyearplayerjoined100)
+summary(linearModel3)
+linearModel4 <- lm(pctfg3.x ~ career, data=fgyearplayerjoined)
+summary(linearModel4)
+```
+
+Really good players are not related with ages/career.
+Average players' success rate is increased by 0.4% in one year. Not bad...?
+
 -	Players with high salaries are good at 3-pointers?
 
--	We want to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are borned with.
+2018-2019 season data only
+```{r}
+nbaInsiderSalaries <- nba_insider_salaries(assume_player_opt_out = T, assume_team_doesnt_exercise = T, return_message = TRUE)
 
--	Show the 3-pointer statistics geographically based on players’ hometowns. Maybe this help illustrates the different basketball playing style across different regions, both domestic and international.
+fgplayersalary <- left_join(fgplayer, nbaInsiderSalaries, by=c("Player"="namePlayer"))
+
+fgplayersalary2 <- na.omit(fgplayersalary)
+fgplayersalary2$salaryinK = fgplayersalary2$value / 1000
+fgplayersalary2$salaryinM = fgplayersalary2$value / 1000000
+
+linearModel <- lm(pctfg3 ~ salaryinM, data=fgplayersalary2)
+summary(linearModel)
+linearModel2 <- lm(fg3m ~ salaryinM, data=fgplayersalary2)
+summary(linearModel2)
+
+```
+When the salary increases by a million dollar, career success rate of 3-point shots increases by 0.09% only.
+It's difficult to say that 3-pointer success rate is the most important factor for one's salary.
 
 -	We would like to explore the importance of three point shooters in a given team by measuring the share of the team’s total salary over time.
 
+
+-	We want to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are borned with.
+
+There is no dramatic increase in 3-pointer success rate.
+Maybe if we can check the players' data from NCAA or high school league, there might be different insight.
+However, based on NBA data, no big changes.
+
+-	Show the 3-pointer statistics geographically based on players’ hometowns. Maybe this help illustrates the different basketball playing style across different regions, both domestic and international.
+
+```{r}
+playerHometown <- read_csv("PlayerHometown.csv")
+
+fgplayerhometown <- left_join(fgplayer, playerHometown, by=c("Player"="Player"))
+fgplayerhometown <- fgplayerhometown %>% filter(not(is.na(State)))
+fgplayerhometown <- na.omit(fgplayerhometown)
+
+fgplayerhometownState <- aggregate(fgplayerhometown[, 2:7], list(fgplayerhometown$State), sum)
+colnames(fgplayerhometownState)[1] <- "State"
+fgplayerhometownState$pctfg3 <- fgplayerhometownState$fg3m / fgplayerhometownState$fg3a * 100
+fgplayerhometownState$pctfg2 <- fgplayerhometownState$fgm / fgplayerhometownState$fga * 100
+fgplayerhometownState$pctft <- fgplayerhometownState$ftm / fgplayerhometownState$fta * 100
+
+plotState <- ggplot() +
+  geom_point(data=fgplayerhometownState, aes(x=State, y=pctfg3, colour=State)) +
+  xlab(NULL) +
+  ylab(NULL)
+plotState
+
+```
