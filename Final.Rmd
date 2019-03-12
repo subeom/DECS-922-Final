@@ -236,6 +236,47 @@ Q1_2 <- ggplot() +
   
 Q1_2
 
+
+fgallyearavg <- aggregate(dataGameLogsTeam[, 29:38], list(dataGameLogsTeam$yearSeason), mean)
+colnames(fgallyearavg)[1] <- "Year"
+fgallyearavg["plusminusTeam"] = NULL
+fgallyearavg["urlTeamSeasonLogo"] = NULL
+fgallyearavg["pfTeam"] = NULL
+fgallyearavg <- fgallyearavg %>% filter (Year >= 1986)
+fgallyearavg$pctpts3 <- fgallyearavg$fg3mTeam / fgallyearavg$ptsTeam * 100
+fgallyearavg$pctpts2 <- fgallyearavg$fg2mTeam / fgallyearavg$ptsTeam * 100
+fgallyearavg$pctptsft <- fgallyearavg$ftmTeam / fgallyearavg$ptsTeam * 100
+
+fgallyearteamavg <- aggregate(dataGameLogsTeam[, 29:38], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$Team), mean)
+colnames(fgallyearteamavg)[1] <- "Year"
+colnames(fgallyearteamavg)[2] <- "Team"
+fgallyearteamavg["plusminusTeam"] = NULL
+fgallyearteamavg["urlTeamSeasonLogo"] = NULL
+fgallyearteamavg["pfTeam"] = NULL
+fgallyearteamavg <- fgallyearteamavg %>% filter (Year >= 1986)
+fgallyearteamavg$pctpts3 <- fgallyearteamavg$fg3mTeam / fgallyearteamavg$ptsTeam * 100
+fgallyearteamavg$pctpts2 <- fgallyearteamavg$fg2mTeam / fgallyearteamavg$ptsTeam * 100
+fgallyearteamavg$pctptsft <- fgallyearteamavg$ftmTeam / fgallyearteamavg$ptsTeam * 100
+
+xaxisbreaks <- seq(1986, 2019, by=3)
+yaxisbreaks <- seq(0, 45, by=5)
+
+Q1_3 <- ggplot() +
+  geom_line(data=fgallyearteamavg, aes(x=Year, y=pctpts3, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
+  geom_line(data=fgallyearteamavg, aes(x=Year, y=pctpts2, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
+  geom_line(data=fgallyearteamavg, aes(x=Year, y=pctptsft, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
+  geom_line(data=fgallyearavg, aes(x=Year, y=pctpts3), size=2, colour='red') +
+  geom_line(data=fgallyearavg, aes(x=Year, y=pctpts2), size=2, colour='green') +
+  geom_line(data=fgallyearavg, aes(x=Year, y=pctptsft), size=2, colour='blue') +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('Field Goal Percentage / all Points red:3, green: 2, blue: free throws') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(0, 45), breaks=yaxisbreaks) +
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks)
+  
+Q1_3
 ```
 
 Yes, the success rate of 3 point field goal has been increased by about 9% since 1986.
