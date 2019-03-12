@@ -204,6 +204,38 @@ Q1 <- ggplot() +
   annotate("text", x=1985, y=max(fg3yearteam$pctfg3)+0.6, label=paste(toString(round(max(fg3yearteam$pctfg3), digits=2)),"%"), color="pink", size=3)  
   
 Q1
+
+
+fg3yearavg <- aggregate(dataGameLogsTeam[, 35:36], list(dataGameLogsTeam$yearSeason), mean)
+colnames(fg3yearavg)[1] <- "Year"
+fg3yearavg <- fg3yearavg %>% filter (Year >= 1986)
+fg3yearavg$pctfg3 <- fg3yearavg$fg3mTeam / fg3yearavg$fg3aTeam * 100
+
+fg3yearteamavg <- aggregate(dataGameLogsTeam[, 35:36], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$Team), mean)
+colnames(fg3yearteamavg)[1] <- "Year"
+colnames(fg3yearteamavg)[2] <- "Team"
+fg3yearteamavg <- fg3yearteamavg %>% filter (Year >= 1986)
+fg3yearteamavg$pctfg3 <- fg3yearteamavg$fg3mTeam / fg3yearteamavg$fg3aTeam * 100
+
+xaxisbreaks <- seq(1986, 2019, by=3)
+yaxisbreaks <- seq(0, 50, by=3)
+
+Q1_2 <- ggplot() +
+  geom_line(data=fg3yearteamavg, aes(x=Year, y=fg3mTeam, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
+  geom_line(data=fg3yearavg, aes(x=Year, y=fg3mTeam), size=2, colour='green') +
+  geom_line(data=fg3yearteamavg, aes(x=Year, y=fg3aTeam, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
+  geom_line(data=fg3yearavg, aes(x=Year, y=fg3aTeam), size=2, colour='blue') +
+  geom_line(data=fg3year, aes(x=Year, y=pctfg3), size=2, colour='black') +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 Pointer Field Goal made vs tries') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(0, 50), breaks=yaxisbreaks) +
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks)
+  
+Q1_2
+
 ```
 
 Yes, the success rate of 3 point field goal has been increased by about 9% since 1986.
