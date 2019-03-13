@@ -399,21 +399,21 @@ Q3 <- ggplot(standings2) +
 Q3
 
 linearModel <- lm(Rk ~ pctfg3, data=standings2)
-summary(linearModel)
+tidy(linearModel)
 
 linearModel2 <- lm(Rk ~ pctfg2, data=standings2) 
-summary(linearModel2)
+tidy(linearModel2)
 
 linearModel3 <- lm(Rk ~ pctfg3 + pctfg2, data=standings2)
-summary(linearModel3)
+tidy(linearModel3)
 
-plot(linearModel)
-plot(linearModel2)
-plot(linearModel3)
+# plot(linearModel)
+# plot(linearModel2)
+# plot(linearModel3)
 
 linearModel4 <- lm(pctfg3 ~ pctfg2, data=standings2)
-summary(linearModel4)
-plot(linearModel4)
+tidy(linearModel4)
+# plot(linearModel4)
 
 Q3_2 <- ggplot(standings2) +
   geom_point(aes(x=pctfg2, y=pctfg3), color="steelblue")
@@ -612,41 +612,41 @@ Why?
 
 ```{r}
 linearModel <- lm(pctfg3 ~ pctfg2, data=fgplayer100)
-summary(linearModel)
+tidy(linearModel)
 
 linearModel2 <- lm(fg3m ~ fgm, data=fgplayer100)
-summary(linearModel2)
+tidy(linearModel2)
 
 linearModel3 <- lm(fg3a ~ fga, data=fgplayer100)
-summary(linearModel3)
+tidy(linearModel3)
 
 linearModel4 <- lm(fg3a ~ fga + fta, data=fgplayer100)
-summary(linearModel4)
+tidy(linearModel4)
 
 linearModel5 <- lm(pctfg3 ~ pctft, data=fgplayer100)
-summary(linearModel5)
+tidy(linearModel5)
 
 linearModel6 <- lm(pctfg2 ~ pctft, data=fgplayer100)
-summary(linearModel6)
+tidy(linearModel6)
 
 linearModel7 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer100)
-summary(linearModel7)
+tidy(linearModel7)
 ```
 
 When we look at all the players, 2-pointers and 3-pointers are reverse-related. Maybe because of dunk shots?
 
 ```{r}
 linearModel7 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer)
-summary(linearModel7)
+tidy(linearModel7)
 ```
 Best players (more than 1,000 career 3-point field goals) are good at 2-pointers as well!!!
 
 ```{r}
 linearModel7 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer1000)
-summary(linearModel7)
+tidy(linearModel7)
 
 linearModel8 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer2000)
-summary(linearModel8)
+tidy(linearModel8)
 ```
 
 -. Are there any relationship between players’ ages and 3-pointers? Both total and average.
@@ -716,13 +716,13 @@ fgyearplayerjoined1000 <- fgyearplayerjoined100 %>% filter(Player %in% fgplayer1
 fgyearplayerjoined2000 <- fgyearplayerjoined1000 %>% filter(Player %in% fgplayer2000$Player)
 
 linearModel <- lm(pctfg3.x ~ career, data=fgyearplayerjoined2000)
-summary(linearModel)
+tidy(linearModel)
 linearModel2 <- lm(pctfg3.x ~ career, data=fgyearplayerjoined1000)
-summary(linearModel2)
+tidy(linearModel2)
 linearModel3 <- lm(pctfg3.x ~ career, data=fgyearplayerjoined100)
-summary(linearModel3)
+tidy(linearModel3)
 linearModel4 <- lm(pctfg3.x ~ career, data=fgyearplayerjoined)
-summary(linearModel4)
+tidy(linearModel4)
 ```
 
 Really good players are not related with ages/career.
@@ -741,9 +741,9 @@ fgplayersalary2$salaryinK = fgplayersalary2$value / 1000
 fgplayersalary2$salaryinM = fgplayersalary2$value / 1000000
 
 linearModel <- lm(pctfg3 ~ salaryinM, data=fgplayersalary2)
-summary(linearModel)
+tidy(linearModel)
 linearModel2 <- lm(fg3m ~ salaryinM, data=fgplayersalary2)
-summary(linearModel2)
+tidy(linearModel2)
 
 ```
 When the salary increases by a million dollar, career success rate of 3-point shots increases by 0.09% only.
