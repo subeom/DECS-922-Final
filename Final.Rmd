@@ -17,13 +17,14 @@ colorlinks: yes
 # library(stringi)
 # library(lubridate)
 # library(texreg)
-# library(broom)
 # library(ggpubr)
 # library(ggrepel)
 # library(janitor)
+# library(plotly)
+library(reshape2)
+library(broom)
 library(tidyverse)
 library(knitr)
-library(plotly)
 library(reticulate)
 
 # plan(multiprocess) 
@@ -68,31 +69,6 @@ colnames(fg3yearteam)[2] <- "Team"
 fg3yearteam <- fg3yearteam %>% filter (Year >= 1986)
 fg3yearteam$pctfg3 <- fg3yearteam$fg3mTeam / fg3yearteam$fg3aTeam * 100
 
-xaxisbreaks <- seq(1985, 2019, by=3)
-yaxisbreaks <- seq(15, 45, by=5)
-
-Q1 <- ggplot() +
-  geom_line(data=fg3yearteam, aes(x=Year, y=pctfg3, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
-  geom_line(data=fg3year, aes(x=Year, y=pctfg3), size=2, colour='black') +
-  xlab('Year') +
-  ylab(NULL) +
-  ggtitle('3 Pointer Field Goal Success Rate') +
-  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
-        plot.title = element_text(hjust = 0.5)) + 
-  scale_y_continuous(limits=c(15, 45), breaks=yaxisbreaks, labels=paste(yaxisbreaks,"%")) +
-  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks) +
-  geom_hline(yintercept=min(fg3year$pctfg3), linetype=2, color="steelblue", size=0.5, alpha=0.9) +
-  geom_hline(yintercept=max(fg3year$pctfg3), linetype=2, color="steelblue", size=0.5, alpha=0.9) +
-  geom_hline(yintercept=min(fg3yearteam$pctfg3), linetype=3, color="pink", size=0.5, alpha=0.9) +
-  geom_hline(yintercept=max(fg3yearteam$pctfg3), linetype=3, color="pink", size=0.5, alpha=0.9) +
-  annotate("text", x=1985, y=min(fg3year$pctfg3)+0.6, label=paste(toString(round(min(fg3year$pctfg3), digits=2)),"%"), color="steelblue", size=3) +
-  annotate("text", x=1985, y=max(fg3year$pctfg3)+0.6, label=paste(toString(round(max(fg3year$pctfg3), digits=2)),"%"), color="steelblue", size=3) +
-  annotate("text", x=1985, y=min(fg3yearteam$pctfg3)+0.6, label=paste(toString(round(min(fg3yearteam$pctfg3), digits=2)),"%"), color="pink", size=3) +
-  annotate("text", x=1985, y=max(fg3yearteam$pctfg3)+0.6, label=paste(toString(round(max(fg3yearteam$pctfg3), digits=2)),"%"), color="pink", size=3)  
-  
-Q1
-
-
 fg3yearavg <- aggregate(dataGameLogsTeam[, 35:36], list(dataGameLogsTeam$yearSeason), mean)
 colnames(fg3yearavg)[1] <- "Year"
 fg3yearavg <- fg3yearavg %>% filter (Year >= 1986)
@@ -108,16 +84,20 @@ xaxisbreaks <- seq(1986, 2019, by=3)
 yaxisbreaks <- seq(0, 50, by=3)
 
 Q1_2 <- ggplot() +
-  geom_line(data=fg3yearteamavg, aes(x=Year, y=fg3mTeam, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
-  geom_line(data=fg3yearavg, aes(x=Year, y=fg3mTeam), size=2, colour='green') +
-  geom_line(data=fg3yearteamavg, aes(x=Year, y=fg3aTeam, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
-  geom_line(data=fg3yearavg, aes(x=Year, y=fg3aTeam), size=2, colour='blue') +
-  geom_line(data=fg3year, aes(x=Year, y=pctfg3), size=2, colour='black') +
+  geom_line(data=fg3yearteamavg, aes(x=Year, y=fg3mTeam, group=Team, alpha=0.5), size=0.5) +
+  geom_line(data=fg3yearteamavg, aes(x=Year, y=fg3aTeam, group=Team, alpha=0.5), size=0.5) +
+  geom_line(data=fg3yearteamavg, aes(x=Year, y=pctfg3, group=Team, alpha=0.5), size=0.5) +
+  geom_line(data=fg3yearavg, aes(x=Year, y=fg3mTeam, colour="3-pt Made", alpha=0.9), size=2) +
+  geom_line(data=fg3yearavg, aes(x=Year, y=fg3aTeam, colour="3-pt Tries", alpha=0.9), size=2) +
+  geom_line(data=fg3year, aes(x=Year, y=pctfg3, colour="3-pt Success (%)", alpha=0.9), size=2) +
+  guides(alpha=FALSE) +
   xlab('Year') +
   ylab(NULL) +
   ggtitle('3 Pointer Field Goal made vs tries') +
-  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
-        plot.title = element_text(hjust = 0.5)) + 
+  theme(panel.background=element_rect(fill=NA)) +
+  theme(panel.grid.major.y=element_line(color="grey", linetype=2)) +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.title=element_blank()) +
   scale_y_continuous(limits=c(0, 50), breaks=yaxisbreaks) +
   scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks)
   
@@ -149,22 +129,94 @@ xaxisbreaks <- seq(1986, 2019, by=3)
 yaxisbreaks <- seq(0, 45, by=5)
 
 Q1_3 <- ggplot() +
-  geom_line(data=fgallyearteamavg, aes(x=Year, y=pctpts3, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
-  geom_line(data=fgallyearteamavg, aes(x=Year, y=pctpts2, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
-  geom_line(data=fgallyearteamavg, aes(x=Year, y=pctptsft, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
-  geom_line(data=fgallyearavg, aes(x=Year, y=pctpts3), size=2, colour='red') +
-  geom_line(data=fgallyearavg, aes(x=Year, y=pctpts2), size=2, colour='green') +
-  geom_line(data=fgallyearavg, aes(x=Year, y=pctptsft), size=2, colour='blue') +
+  geom_line(data=fgallyearteamavg, aes(x=Year, y=pctpts3, alpha=0.5, group=Team), size=0.5) +
+  geom_line(data=fgallyearteamavg, aes(x=Year, y=pctpts2, alpha=0.5, group=Team), size=0.5) +
+  geom_line(data=fgallyearteamavg, aes(x=Year, y=pctptsft, alpha=0.5, group=Team), size=0.5) +
+  geom_line(data=fgallyearavg, aes(x=Year, y=pctpts3, colour='3 Point', alpha=0.9), size=2) +
+  geom_line(data=fgallyearavg, aes(x=Year, y=pctpts2, colour='2 Point', alpha=0.9), size=2) +
+  geom_line(data=fgallyearavg, aes(x=Year, y=pctptsft, colour='Free Throw', alpha=0.9), size=2) +
+  guides(alpha=FALSE) +
   xlab('Year') +
   ylab(NULL) +
-  ggtitle('Field Goal Percentage / all Points red:3, green: 2, blue: free throws') +
-  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
-        plot.title = element_text(hjust = 0.5)) + 
+  ggtitle('Field Goal Percentage') +
+  theme(panel.background=element_rect(fill=NA)) +
+  theme(panel.grid.major.y=element_line(color="grey", linetype=2)) +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.title=element_blank()) +
   scale_y_continuous(limits=c(0, 45), breaks=yaxisbreaks) +
   scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks)
-  
+
 Q1_3
+
 ```
+
+# Statistics of top 10 3-point shooters each year
+
+```{r}
+summary(fgyearplayer)
+
+# fgtopplayerbysuccessrate
+fgyeartopsr <-
+  fgyearplayer %>%
+  group_by(Year) %>%
+  filter(fg3m >= 29) %>%
+  mutate(Rank = order(order(pctfg3, decreasing = TRUE))) %>%
+  filter(Rank <= 10) %>%
+  arrange(Year, Rank)
+
+fgyeartopsr
+
+# fgtopplayerbysuccessrateavg
+fgyeartopsravg <- aggregate(fgyeartopsr[, 3:8], list(fgyeartopsr$Year), sum)
+colnames(fgyeartopsravg)[1] <- "Year"
+fgyeartopsravg$pctfg3 <- fgyeartopsravg$fg3m / fgyeartopsravg$fg3a * 100
+fgyeartopsravg$pctfg2 <- fgyeartopsravg$fgm / fgyeartopsravg$fga * 100
+fgyeartopsravg$pctft <- fgyeartopsravg$ftm / fgyeartopsravg$fta * 100
+
+# fgyeartopplayerbymade
+fgyeartopm <-
+  fgyearplayer %>%
+  group_by(Year) %>%
+  filter(fg3m >= 29) %>%
+  mutate(Rank = order(order(fg3m, decreasing = TRUE))) %>%
+  filter(Rank <= 300) %>%
+  arrange(Year, Rank)
+
+fgyeartopm
+
+# fgyeartopplayerbymadeavg
+fgyeartopmavg <- aggregate(fgyeartopm[, 3:8], list(fgyeartopm$Year), sum)
+colnames(fgyeartopmavg)[1] <- "Year"
+fgyeartopmavg$pctfg3 <- fgyeartopmavg$fg3m / fgyeartopmavg$fg3a * 100
+fgyeartopmavg$pctfg2 <- fgyeartopmavg$fgm / fgyeartopmavg$fga * 100
+fgyeartopmavg$pctft <- fgyeartopmavg$ftm / fgyeartopmavg$fta * 100
+
+# fgyeartop <- left_join (fgyeartopsr, fgyeartopm, by=c("Year"="Year", "Player"="Player"))
+
+xaxisbreaks <- seq(1986, 2019, by=3)
+yaxisbreaks <- seq(30, 50, by=5)
+
+Q1_4 <- ggplot() +
+  geom_line(data=fgyeartopsravg, aes(x=Year, y=pctfg3, colour='By Success Rate', alpha=0.5), size=2) +
+  geom_line(data=fgyeartopmavg, aes(x=Year, y=pctfg3, colour='By # of made', alpha=0.5), size=2) +
+  guides(alpha=FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point success rate of top 30 players') +
+  theme(panel.background=element_rect(fill=NA)) +
+  theme(panel.grid.major.y=element_line(color="grey", linetype=2)) +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.title=element_blank()) +
+  scale_y_continuous(limits=c(30, 50), breaks=yaxisbreaks) +
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks)
+
+Q1_4
+
+top9597sr <- fgyeartopsr %>% filter(Year>=1995) %>% filter(Year<=1997)
+top9597m <- fgyeartopm %>% filter(Year>=1995) %>% filter(Year<=1997)
+  
+```
+
 
 Yes, the success rate of 3 point field goal has been increased by about 9% since 1986.
 
@@ -199,15 +251,18 @@ xaxisbreaks <- seq(1985, 2019, by=3)
 yaxisbreaks <- seq(15, 60, by=5)
 
 Q2_1 <- ggplot() +
-  geom_line(data=fgyearteam, aes(x=Year, y=pctfg3, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
-  geom_line(data=fgyear, aes(x=Year, y=pctfg3), size=2, colour='black') +
-  geom_line(data=fgyearteam, aes(x=Year, y=pctfg2, colour=Team), size=0.5, show.legend=FALSE, alpha=0.7) +
-  geom_line(data=fgyear, aes(x=Year, y=pctfg2), size=2, colour='black') +
+  geom_line(data=fgyearteam, aes(x=Year, y=pctfg3, group=Team, alpha=0.5), size=0.5) +
+  geom_line(data=fgyearteam, aes(x=Year, y=pctfg2, group=Team, alpha=0.5), size=0.5) +
+  geom_line(data=fgyear, aes(x=Year, y=pctfg3, colour="3-pt", alpha=0.9), size=2) +
+  geom_line(data=fgyear, aes(x=Year, y=pctfg2, colour="2-pt", alpha=0.9), size=2) +
+  guides(alpha=FALSE) +
   xlab('Year') +
   ylab(NULL) +
   ggtitle('Field Goal Success Rate') +
-  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
-        plot.title = element_text(hjust = 0.5)) + 
+  theme(panel.background=element_rect(fill=NA)) +
+  theme(panel.grid.major.y=element_line(color="grey", linetype=2)) +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.title=element_blank()) +
   scale_y_continuous(limits=c(15, 60), breaks=yaxisbreaks, labels=yaxisbreaks) +
   scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)# +
 
@@ -233,13 +288,16 @@ xaxisbreaks <- seq(1985, 2019, by=3)
 yaxisbreaks <- seq(0.8, 1.15, by=0.05)
 
 Q2_2 <- ggplot() +
-  geom_line(data=fgyear, aes(x=Year, y=e3), size=1, colour='red') +
-  geom_line(data=fgyear, aes(x=Year, y=e2), size=1, colour='blue') +
+  geom_line(data=fgyear, aes(x=Year, y=e3, color="3-pt", alpha=0.9), size=2) +
+  geom_line(data=fgyear, aes(x=Year, y=e2, color="2-pt", alpha=0.9), size=2) +
+  guides(alpha=FALSE) +
   xlab('Year') +
   ylab(NULL) +
   ggtitle('Expected points') +
-  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
-        plot.title = element_text(hjust = 0.5)) + 
+  theme(panel.background=element_rect(fill=NA)) +
+  theme(panel.grid.major.y=element_line(color="grey", linetype=2)) +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.title=element_blank()) +
   scale_y_continuous(limits=c(0.8, 1.15), breaks=yaxisbreaks, labels=yaxisbreaks) +
   scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
 
@@ -263,12 +321,6 @@ fgyearteam$pctfg2 <- fgyearteam$fg2mTeam / fgyearteam$fg2aTeam * 100
 
 standings2 <- left_join(standings, fgyearteam, by=c("Year" = "Year", "Team" = "nameTeam"))
 
-Q3 <- ggplot(standings2) +
-  geom_point(aes(x=pctfg3, y=Rk), color="steelblue") +
-  geom_point(aes(x=pctfg2, y=Rk), color="pink")
-
-Q3
-
 linearModel <- lm(Rk ~ pctfg3, data=standings2)
 tidy(linearModel)
 
@@ -281,10 +333,6 @@ tidy(linearModel3)
 linearModel4 <- lm(pctfg3 ~ pctfg2, data=standings2)
 tidy(linearModel4)
 
-Q3_2 <- ggplot(standings2) +
-  geom_point(aes(x=pctfg2, y=pctfg3), color="steelblue")
-Q3_2
- 
 ```
 
 Yes. However, pctfg2 is more relevant than pctfg3
@@ -310,30 +358,6 @@ fgyearplayer$pctfg3 <- fgyearplayer$fg3m / fgyearplayer$fg3a * 100
 fgyearplayer$pctfg2 <- fgyearplayer$fgm / fgyearplayer$fga * 100
 fgyearplayer$pctft <- fgyearplayer$ftm / fgyearplayer$fta * 100
 
-# Meaningless...
-yearplayer <- aggregate(fgyearplayer[,5], list(fgyearplayer$Player), sum)
-colnames(yearplayer)[1] <- "Player"
-colnames(yearplayer)[2] <- "totalfg3m"
-ggplot(yearplayer, aes(totalfg3m)) + geom_histogram()
-yearplayer100 <- yearplayer %>% filter (totalfg3m>=100)
-
-xaxisbreaks <- seq(1985, 2019, by=3)
-yaxisbreaks <- seq(20, 50, by=5)
-
-fgyearplayer100 <- fgyearplayer %>% filter(Player %in% yearplayer100$Player)
-plotYearPlayer <- ggplot() +
-  geom_line(data=fgyearplayer100, aes(x=Year, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
-  geom_line(data=fgyearplayer100, aes(x=Year, y=pctfg2, colour=Player), size=1, show.legend = FALSE) +
-  xlab('Year') +
-  ylab(NULL) +
-  ggtitle('3 point shot success rate by player') +
-  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
-        plot.title = element_text(hjust = 0.5)) + 
-  scale_y_continuous(limits=c(0, 100), breaks=yaxisbreaks, labels=yaxisbreaks) +
-  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
-plotYearPlayer
-# Meaningless...
-
 fgplayer <- aggregate(dataGameLogsPlayer1986[, 19:26], list(dataGameLogsPlayer1986$namePlayer), sum)
 colnames(fgplayer)[1] <- "Player"
 fgplayer$pctFG = NULL
@@ -348,9 +372,8 @@ fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
 
 ```
 
+<!--
 ```{python}
-import pandas as pd
-
 fgplayer = r.fgplayer
 
 fgplayer['firstYear'] = 2019
@@ -376,93 +399,73 @@ print(fgplayer.head(5))
 print(fgplayer.tail(5))
 
 ```
+-->
+
 
 ```{r}
-fgplayer <- py$fgplayer
+# fgplayer <- py$fgplayer
+load("fgplayer.Rdata")
+
 fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
+fgplayer500 <- fgplayer %>% filter(fg3m >= 500)
 fgplayer1000 <- fgplayer100 %>% filter(fg3m >= 1000)
 fgplayer2000 <- fgplayer1000 %>% filter(fg3m >= 2000)
 
-
-xaxisbreaks <- seq(1985, 2019, by=3)
+xaxisbreaks <- seq(1986, 2019, by=3)
 yaxisbreaks <- seq(20, 50, by=5)
 
+career100 <- melt(data=fgplayer100, id.var=c("Player","pctfg3"), measure.vars=c("firstYear", "lastYear"))
+
 plotPlayer100 <- ggplot() +
-  geom_linerange(data=fgplayer100, aes(x=pctfg3, y=lastYear, ymin=firstYear, ymax=lastYear, colour=Player), size=1, show.legend = FALSE) +
-  # geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
-  # geom_line
+  geom_line(data=career100, aes(x=value, y=pctfg3, color=Player), show.legend=FALSE, alpha=0.2) +
+  geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, colour=Player, alpha=0.8),
+             size=fgplayer100$fg3a/300, show.legend=FALSE) +
   xlab('Year') +
   ylab(NULL) +
   ggtitle('3 point success rate by player and year') +
   theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
         plot.title = element_text(hjust = 0.5)) + 
-  scale_x_continuous(limits=c(20, 50), breaks=yaxisbreaks, labels=yaxisbreaks) +
-  scale_y_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+  scale_y_continuous(limits=c(20, 50), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks)
 plotPlayer100
 
 
-xaxisbreaks <- seq(1985, 2019, by=3)
-yaxisbreaks <- seq(30, 45, by=1)
+xaxisbreaks <- seq(1986, 2019, by=3)
+yaxisbreaks <- seq(25, 50, by=5)
 
-fgplayer1000 <- fgplayer100 %>% filter (fg3m >= 1000)
-plotPlayer1000 <- ggplot() +
-  geom_pointrange(data=fgplayer1000, aes(x=pctfg3, y=lastYear, ymin=firstYear, ymax=lastYear, colour=Player), size=1, show.legend = FALSE) +
-  # geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
-  # geom_line
+career500 <- melt(data=fgplayer500, id.var=c("Player","pctfg3"), measure.vars=c("firstYear", "lastYear"))
+
+plotPlayer500 <- ggplot() +
+  geom_line(data=career500, aes(x=value, y=pctfg3, color=Player), show.legend=FALSE, alpha=0.2) +
+  geom_point(data=fgplayer500, aes(x=lastYear, y=pctfg3, colour=Player, alpha=0.8),
+             size=fgplayer500$fg3a/300, show.legend = FALSE) +
   xlab('Year') +
   ylab(NULL) +
   ggtitle('3 point success rate by player and year') +
   theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
         plot.title = element_text(hjust = 0.5)) + 
-  scale_x_continuous(limits=c(30, 45), breaks=yaxisbreaks, labels=yaxisbreaks) +
-  scale_y_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
-plotPlayer1000
+  scale_y_continuous(limits=c(25, 50), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks) +
+  geom_hline()
+plotPlayer500
 
+xaxisbreaks <- seq(1986, 2019, by=3)
+yaxisbreaks <- seq(30, 45, by=5)
 
-```
-
-```{r}
-xaxisbreaks <- seq(1985, 2019, by=3)
-yaxisbreaks <- seq(30, 45, by=1)
-
-plotPlayer100 <- ggplot() +
-  geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, size=fg3m+fg3a, colour=Player), show.legend = FALSE) +
-  # geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
-  # geom_line
-  xlab('Year') +
-  ylab(NULL) +
-  ggtitle('3 point success rate by player and year') +
-  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
-        plot.title = element_text(hjust = 0.5)) + 
-  scale_y_continuous(limits=c(30, 45), breaks=yaxisbreaks, labels=yaxisbreaks) +
-  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
-plotPlayer100
+career1000 <- melt(data=fgplayer1000, id.var=c("Player","pctfg3"), measure.vars=c("firstYear", "lastYear"))
 
 plotPlayer1000 <- ggplot() +
-  geom_point(data=fgplayer1000, aes(x=lastYear, y=pctfg3, size=fg3m+fg3a, colour=Player), show.legend = FALSE) +
-  # geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
-  # geom_line
+  geom_line(data=career1000, aes(x=value, y=pctfg3, color=Player), show.legend=FALSE, alpha=0.2) +
+  geom_point(data=fgplayer1000, aes(x=lastYear, y=pctfg3, colour=Player, alpha=0.8),
+             size=fgplayer1000$fg3a/300, show.legend = FALSE) +
   xlab('Year') +
   ylab(NULL) +
   ggtitle('3 point success rate by player and year') +
   theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
         plot.title = element_text(hjust = 0.5)) + 
   scale_y_continuous(limits=c(30, 45), breaks=yaxisbreaks, labels=yaxisbreaks) +
-  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks)
 plotPlayer1000
-
-plotPlayer2000 <- ggplot() +
-  geom_point(data=fgplayer2000, aes(x=lastYear, y=pctfg3, size=fg3m+fg3a, colour=Player), show.legend = FALSE) +
-  # geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
-  # geom_line
-  xlab('Year') +
-  ylab(NULL) +
-  ggtitle('3 point success rate by player and year') +
-  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
-        plot.title = element_text(hjust = 0.5)) + 
-  scale_y_continuous(limits=c(30, 45), breaks=yaxisbreaks, labels=yaxisbreaks) +
-  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
-plotPlayer2000
 ```
 
 Above graph shows more players are trying 3 point shots than before. even though the average success rate is similar.
@@ -522,43 +525,13 @@ fgyearplayer100 <- fgyearplayer %>% filter(Player %in% fgplayer100$Player)
 fgyearplayer1000 <- fgyearplayer100 %>% filter(Player %in% fgplayer1000$Player)
 fgyearplayer2000 <- fgyearplayer1000 %>% filter(Player %in% fgplayer2000$Player)
 
-xaxisbreaks <- seq(1985, 2019, by=3)
-yaxisbreaks <- seq(0, 100, by=5)
-
-plotYearPlayer100 <- ggplot() +
-  geom_line(data=fgyearplayer100, aes(x=Year, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
-  geom_line(data=fgyearplayer100, aes(x=Year, y=pctfg2, colour=Player), size=1, linetype="dotted", show.legend = FALSE) +
-  xlab('Year') +
-  ylab(NULL) +
-  ggtitle('3 point shot success rate by player') +
-  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
-        plot.title = element_text(hjust = 0.5)) + 
-  scale_y_continuous(limits=c(0, 100), breaks=yaxisbreaks, labels=yaxisbreaks) +
-  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
-plotYearPlayer100
-
-
-xaxisbreaks <- seq(1985, 2019, by=3)
-yaxisbreaks <- seq(0, 70, by=5)
-
-plotYearPlayer1000 <- ggplot() +
-  geom_line(data=fgyearplayer1000, aes(x=Year, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
-  geom_line(data=fgyearplayer1000, aes(x=Year, y=pctfg2, colour=Player), size=1, linetype="dotted", show.legend = FALSE) +
-  xlab('Year') +
-  ylab(NULL) +
-  ggtitle('3 point shot success rate by player') +
-  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
-        plot.title = element_text(hjust = 0.5)) + 
-  scale_y_continuous(limits=c(0, 70), breaks=yaxisbreaks, labels=yaxisbreaks) +
-  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
-plotYearPlayer1000
 
 xaxisbreaks <- seq(1985, 2019, by=3)
 yaxisbreaks <- seq(25, 55, by=5)
 
 plotYearPlayer2000 <- ggplot() +
   geom_line(data=fgyearplayer2000, aes(x=Year, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
-  geom_line(data=fgyearplayer2000, aes(x=Year, y=pctfg2, colour=Player), size=1, linetype="dotted", show.legend = FALSE) +
+  # geom_line(data=fgyearplayer2000, aes(x=Year, y=pctfg2, colour=Player), size=1, linetype="dotted", show.legend = FALSE) +
   xlab('Year') +
   ylab(NULL) +
   ggtitle('3 point shot success rate by player') +
@@ -598,7 +571,7 @@ Average players' success rate is increased by 0.4% in one year. Not bad...?
 
 2018-2019 season data only
 ```{r}
-nbaInsiderSalaries <- nba_insider_salaries(assume_player_opt_out = T, assume_team_doesnt_exercise = T, return_message = TRUE)
+# nbaInsiderSalaries <- nba_insider_salaries(assume_player_opt_out = T, assume_team_doesnt_exercise = T, return_message = TRUE)
 
 fgplayersalary <- left_join(fgplayer, nbaInsiderSalaries, by=c("Player"="namePlayer"))
 
@@ -610,7 +583,6 @@ linearModel <- lm(pctfg3 ~ salaryinM, data=fgplayersalary2)
 tidy(linearModel)
 linearModel2 <- lm(fg3m ~ salaryinM, data=fgplayersalary2)
 tidy(linearModel2)
-
 ```
 When the salary increases by a million dollar, career success rate of 3-point shots increases by 0.09% only.
 It's difficult to say that 3-pointer success rate is the most important factor for one's salary.
@@ -630,7 +602,7 @@ However, based on NBA data, no big changes.
 playerHometown <- read_csv("PlayerHometown.csv")
 
 fgplayerhometown <- left_join(fgplayer, playerHometown, by=c("Player"="Player"))
-fgplayerhometown <- fgplayerhometown %>% filter(not(is.na(State)))
+fgplayerhometown <- fgplayerhometown %>% filter(!(is.na(State)))
 fgplayerhometown <- na.omit(fgplayerhometown)
 
 fgplayerhometownState <- aggregate(fgplayerhometown[, 2:7], list(fgplayerhometown$State), sum)

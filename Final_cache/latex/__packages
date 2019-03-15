@@ -21,3 +21,4 @@ stringr
 forcats
 plotly
 reticulate
+reshape2
