@@ -1,9 +1,12 @@
 ---
-title: "Problem Set 6"
-author: "Subeom Lee"
+title: "National Basketball Association (NBA) and 3-pointers"
+subtitle: "Final Project, DECS-922: *Data Exploration*, Winter 2019"
+author: "Subeom Lee, Tianyi Peng, and Jieul Jang"
 date: "`r Sys.Date()`"
 output:
-  pdf_document: default
+  pdf_document:
+    toc: true
+    number_sections: true
   html_document:
     df_print: paged
 linkcolor: cyan
@@ -29,32 +32,57 @@ library(reticulate)
 
 # plan(multiprocess) 
 
-opts_chunk$set(echo=TRUE,
+opts_chunk$set(echo=FALSE,
                cache.lazy=FALSE,
                collapse=TRUE,
                comment=NA,
                warning=FALSE,
                prompt=FALSE,
-               message=FALSE
-               ,cache=TRUE
+               message=FALSE,
+               cache=TRUE
                )
 options(digits=4, scipen=0)
 masterdoc <- knitr::current_input()
 ```
 
+\pagebreak
 
-# Questions
+# Introduction
+
+In the 2018-2019 NBA season, we saw many new 3 pointers records. For example, Klay Thompson from Golden State Warriors, made 14 3-pointers in Chicago last October. ([link](https://ftw.usatoday.com/2018/10/klay-thompson-14-3-pointers-nba-record)) James Harden, Houston’s top 3-point shooter, recorded 2nd longest 30-point games streak, 32 games, in last Feb., which is the first record change after 1962. ([link](http://www.espn.com/nba/story/_/id/26081187/james-harden-historic-30-point-streak-ends-28-win-vs-atlanta)) Also, Klay Thompson succeeded 10 consecutive 3-pointers in last Jan. ([link](https://www.newsweek.com/klay-thompson-three-pointers-nba-records-golden-state-warriors-los-angeles-1299559)) Thus, we would like to answer questions on the historical development, correlation with other factors such as team's standing, player's age, other shoots, and others. 
+
+## Methodology
+
+To acquire detailed historical data, we used nbastatR package. ([link](http://asbcllc.com/nbastatR/index.html)) This is a well-made open-source package that has several functions to get the NBA data. We found that not all the functions are working and some of them are duplicates. However, it was successful to find the fundamental data to research on 3-pointers. 
+
+For additional data such as histrical standings and salary information, that are not included in nbastatR package, we downloaded CSV files from Basketball-Reference.com ([link](https://www.basketball-reference.com/))
+
+The data from nbastatR (`dataGameLogsPlayer` & `dataGameLogsTeam`) contain all the variables available so we trimmed the data by selecting relevant variables for analysis of each question. 
+
+## Questions
+### It seems that players are getting better at making 3-pointers than 10 or 20 years ago (both on average and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?
+### Teams with more 3-pointers tend to be the better performing teams? 
+### Are there any relationship between players’ ages and 3-pointers? 
+### Players who are good at 3-pointers are also good at 2-pointers or free throws? 
+### Players with high salaries are good at 3-pointers? 
+### We want to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are born with. 
+### Show the 3-pointer statistics geographically based on players’ hometowns. Maybe this help illustrates the different basketball playing style across different regions, both domestic and international. 
+### We would like to explore the importance of three point shooters in a given team by measuring the share of the team’s total salary over time. 
+### What are the expected average points of 3-pointers and 2-pointers? 
+### If the expected average point from 3-pointers is getting higher than that of 2-pointers, how should each team’s strategy chang?
+
+\pagebreak
 
 \footnotesize
 \medskip
-```{r}
+```{r echo=FALSE}
 load('BaseEnvironment.Rdata')
 ```
 \normalsize
 
 # Team level questions
 
-Q1.	It seems that players are getting better at making 3-pointers than 20 years ago (both on average and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?
+* **Q1.	It seems that players are getting better at making 3-pointers than 20 years ago (both on average and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?**
 
 \footnotesize
 ```{r}
@@ -149,9 +177,11 @@ Q1_3 <- ggplot() +
 Q1_3
 
 ```
+\normalsize
 
-# Statistics of top 10 3-point shooters each year
+Statistics of top 10 3-point shooters each year
 
+\footnotesize
 ```{r}
 summary(fgyearplayer)
 
@@ -216,11 +246,13 @@ top9597sr <- fgyeartopsr %>% filter(Year>=1995) %>% filter(Year<=1997)
 top9597m <- fgyeartopm %>% filter(Year>=1995) %>% filter(Year<=1997)
   
 ```
+\normalsize
 
+Yes, the success rate of 3-point field goal has been increased by about 9% since 1986.
 
-Yes, the success rate of 3 point field goal has been increased by about 9% since 1986.
+\pagebreak
 
-Q2.	If true, what could be the reasons for that?
+* **Q2.	If true, what could be the reasons for that?**
     -	What are the expected average points of 3-pointers and 2-pointers? Show the historical data.
     -	If the expected average point from 3-pointers is getting higher than that of
       2-pointers, how should each team’s strategy changes
@@ -232,7 +264,7 @@ Its debut, in the 1979-80 season, was inauspicious.
 There are many reasons for the rise of the 3-point shot, but one may simply be math. It took a while, but coaches finally stopped listening to the traditionalist naysayers and realized that a shot that is worth 50 percent more pays off, even if that shot is a little harder to make.
 
 “Teams have all caught on to the whole points-per-possession argument,” Lawrence Frank, the Nets’ coach at the time, said in 2009 as the 3 rate began to rapidly increase.
-
+\footnotesize
 ```{r}
 fgyear <- aggregate(dataGameLogsTeam[, 35:38], list(dataGameLogsTeam$yearSeason), sum)
 colnames(fgyear)[1] <- "Year"
@@ -258,7 +290,7 @@ Q2_1 <- ggplot() +
   guides(alpha=FALSE) +
   xlab('Year') +
   ylab(NULL) +
-  ggtitle('Field Goal Success Rate') +
+  ggtitle('Q1. Historical Field Goal Success Rate') +
   theme(panel.background=element_rect(fill=NA)) +
   theme(panel.grid.major.y=element_line(color="grey", linetype=2)) +
   theme(plot.title = element_text(hjust = 0.5)) + 
@@ -269,6 +301,7 @@ Q2_1 <- ggplot() +
 Q2_1
 
 ```
+\normalsize
 
 The expected points of 2-point shots in 1986 was 'r fgyear$pctfg2[1986-1985]/100' * 2 = 'r fgyear$pctfg2[1986-1985]/100*2'
 The expected points of 3-point shots in 1986 was 'r fgyear$pctfg3[1986-1985]/100' * 3 = 'r fgyear$pctfg3[1986-1985]/100*3'
@@ -280,6 +313,8 @@ Teams started to focus on 3-point shots after its first introduction in 1979,
 because the expected points of 3-point shots are higher than that of 2-point shots
 since early 90's.
 
+
+\footnotesize
 ```{r}
 fgyear$e2 = fgyear$pctfg2 / 100 * 2
 fgyear$e3 = fgyear$pctfg3 / 100 * 3
@@ -304,11 +339,13 @@ Q2_2 <- ggplot() +
 Q2_2
 
 ```
+\normalsize
 
-Q3.	Teams with more 3-pointers tend to be the better performing teams?
-    -	Any insights between standings and 3-pointers?
+\pagebreak
+* **Q3.	Teams with more 3-pointers tend to be the better performing teams?**
+    -	**Any insights between standings and 3-pointers?**
 
-
+\footnotesize
 ```{r}
 standings <- read_csv("standings.csv")
 
@@ -334,6 +371,7 @@ linearModel4 <- lm(pctfg3 ~ pctfg2, data=standings2)
 tidy(linearModel4)
 
 ```
+\normalsize
 
 Yes. However, pctfg2 is more relevant than pctfg3
 
@@ -342,9 +380,10 @@ Yes. However, pctfg2 is more relevant than pctfg3
 -	Focus on three point shooting is a strategy that started fairly recently, we can create a map to show where this strategy initially emerged and how fast it spreaded across the entire country.
 
 
+\pagebreak
 
 # Player level questions
-
+\footnotesize
 ```{r}
 dataGameLogsPlayer1986 <- dataGameLogsPlayer %>% filter(yearSeason >= 1986)
 
@@ -371,35 +410,6 @@ fgplayer <- fgplayer[order(-fgplayer$pctfg3),]
 fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
 
 ```
-
-<!--
-```{python}
-fgplayer = r.fgplayer
-
-fgplayer['firstYear'] = 2019
-fgplayer['lastYear'] = 1986
-
-print(fgplayer.head(5))
-print(fgplayer.tail(5))
-
-i=0
-
-for player in fgplayer.values:
-  min = player[-2]
-  max = player[-1]
-  for yp in r.fgyearplayer.values:
-    if player[0] == yp[1]:
-      if max < yp[0]: max = yp[0]
-      if min > yp[0]: min = yp[0]
-  fgplayer.iloc[i,-1]=max
-  fgplayer.iloc[i,-2]=min
-  i += 1
-  
-print(fgplayer.head(5))
-print(fgplayer.tail(5))
-
-```
--->
 
 
 ```{r}
@@ -454,24 +464,26 @@ yaxisbreaks <- seq(30, 45, by=5)
 
 career1000 <- melt(data=fgplayer1000, id.var=c("Player","pctfg3"), measure.vars=c("firstYear", "lastYear"))
 
-plotPlayer1000 <- ggplot() +
-  geom_line(data=career1000, aes(x=value, y=pctfg3, color=Player), show.legend=FALSE, alpha=0.2) +
-  geom_point(data=fgplayer1000, aes(x=lastYear, y=pctfg3, colour=Player, alpha=0.8),
-             size=fgplayer1000$fg3a/300, show.legend = FALSE) +
+plotPlayer2000 <- ggplot() +
+  geom_point(data=fgyearplayer2000, aes(x=Year, y=pctfg3, colour=Player, alpha=0.8),
+             size=fgyearplayer2000$fg3a/30, show.legend = FALSE) +
   xlab('Year') +
   ylab(NULL) +
   ggtitle('3 point success rate by player and year') +
   theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
         plot.title = element_text(hjust = 0.5)) + 
   scale_y_continuous(limits=c(30, 45), breaks=yaxisbreaks, labels=yaxisbreaks) +
-  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks)
-plotPlayer1000
-```
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks) +
+  facet_wrap(~Player)
+plotPlayer2000
 
+
+```
+\normalsize
 Above graph shows more players are trying 3 point shots than before. even though the average success rate is similar.
 
-
-Q4. Players who are good at 3-pointers are also good at 2-pointers or free throws?
+\pagebreak
+* **Q4. Players who are good at 3-pointers are also good at 2-pointers or free throws?**
 
 By regression.
 
@@ -479,6 +491,7 @@ Players who are good at free throws tend to be good at 3-pointers.
 However, 2-point field goal success rate is not related with 3-point field goal success rate!!!
 Why?
 
+\footnotesize
 ```{r}
 linearModel <- lm(pctfg3 ~ pctfg2, data=fgplayer100)
 tidy(linearModel)
@@ -501,7 +514,7 @@ tidy(linearModel6)
 linearModel7 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer100)
 tidy(linearModel7)
 ```
-
+\normalsize
 When we look at all the players, 2-pointers and 3-pointers are reverse-related. Maybe because of dunk shots?
 
 ```{r}
@@ -538,7 +551,8 @@ plotYearPlayer2000 <- ggplot() +
   theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
         plot.title = element_text(hjust = 0.5)) + 
   scale_y_continuous(limits=c(25, 55), breaks=yaxisbreaks, labels=yaxisbreaks) +
-  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks) +
+  facet_wrap(~Player)
 plotYearPlayer2000
 
 
@@ -578,10 +592,11 @@ fgplayersalary <- left_join(fgplayer, nbaInsiderSalaries, by=c("Player"="namePla
 fgplayersalary2 <- na.omit(fgplayersalary)
 fgplayersalary2$salaryinK = fgplayersalary2$value / 1000
 fgplayersalary2$salaryinM = fgplayersalary2$value / 1000000
+fgplayersalary2_1000 <- fgplayersalary2 %>% filter(Player %in% fgplayer1000$Player)
 
-linearModel <- lm(pctfg3 ~ salaryinM, data=fgplayersalary2)
+linearModel <- lm(salaryinM ~ pctfg3, data=fgplayersalary2_1000)
 tidy(linearModel)
-linearModel2 <- lm(fg3m ~ salaryinM, data=fgplayersalary2)
+linearModel2 <- lm(salaryinM ~ fg3m, data=fgplayersalary2_1000)
 tidy(linearModel2)
 ```
 When the salary increases by a million dollar, career success rate of 3-point shots increases by 0.09% only.
