@@ -49,18 +49,21 @@ masterdoc <- knitr::current_input()
 
 # Introduction
 
-In the 2018-2019 NBA season, we saw many new 3 pointers records. For example, Klay Thompson from Golden State Warriors, made 14 3-pointers in Chicago last October. ([link](https://ftw.usatoday.com/2018/10/klay-thompson-14-3-pointers-nba-record)) James Harden, Houston’s top 3-point shooter, recorded 2nd longest 30-point games streak, 32 games, in last Feb., which is the first record change after 1962. ([link](http://www.espn.com/nba/story/_/id/26081187/james-harden-historic-30-point-streak-ends-28-win-vs-atlanta)) Also, Klay Thompson succeeded 10 consecutive 3-pointers in last Jan. ([link](https://www.newsweek.com/klay-thompson-three-pointers-nba-records-golden-state-warriors-los-angeles-1299559)) Thus, we would like to answer questions on the historical development, correlation with other factors such as team's standing, player's age, other shoots, and others. 
+In the 2018-2019 NBA regular season, we observed births of many new 3 pointers records. For example, Klay Thompson from the Golden State Warriors, made 14 3-pointers in Chicago last October. ([link](https://ftw.usatoday.com/2018/10/klay-thompson-14-3-pointers-nba-record)) James Harden, a key player from the Houston Rockets who is known for being deadly at making three pointers, created a record of second longest 30-point games streak, 32 games, in last February. This is the first record change after 1962. ([link](http://www.espn.com/nba/story/_/id/26081187/james-harden-historic-30-point-streak-ends-28-win-vs-atlanta)) Also, Klay Thompson mentioned earlier succeeded 10 consecutive 3-pointers in last Jan. ([link](https://www.newsweek.com/klay-thompson-three-pointers-nba-records-golden-state-warriors-los-angeles-1299559)) 
+
+These observations made us interested in looking this phenomenon further, especially whether they are exceptions to the normal or they represent a shifting trend in how teams play in the NBA. Thus, we would like to answer the following questions to gain a better understanding how three pointer shooting has evolved since 1986 while taking into considerations of dimensions such as teams' standings, player age, other scoring methods in the game and a few other factors. 
 
 ## Methodology
 
-To acquire detailed historical data, we used nbastatR package. ([link](http://asbcllc.com/nbastatR/index.html)) This is a well-made open-source package that has several functions to get the NBA data. We found that not all the functions are working and some of them are duplicates. However, it was successful to find the fundamental data to research on 3-pointers. 
+To conduct the necessary analysis, we used detailed historical data from the nbastatR package. ([link](http://asbcllc.com/nbastatR/index.html)) This is a comprehensive open-source package that has additional tools to analyze the NBA data. Through some initial testing, we found that not all the tools are effective at helping us understand the questions regarding the three point shooting trend in the NBA and some of the additional functions in the NBA package are duplicated. However, we found the dataset to be helpful and sufficient to conduct the proposed research. 
 
 For additional data such as histrical standings and salary information, that are not included in nbastatR package, we downloaded CSV files from Basketball-Reference.com ([link](https://www.basketball-reference.com/))
 
 The data from nbastatR (`dataGameLogsPlayer` & `dataGameLogsTeam`) contain all the variables available so we trimmed the data by selecting relevant variables for analysis of each question. 
 
-## Questions
-### It seems that players are getting better at making 3-pointers than 10 or 20 years ago (both on average and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?
+
+## Some of the key questions that we are trying to understand are listed below:
+### It seems that players are getting better at making 3-pointers than 10 or 20 years ago (both on average across the league and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?
 ### Teams with more 3-pointers tend to be the better performing teams? 
 ### Are there any relationship between players’ ages and 3-pointers? 
 ### Players who are good at 3-pointers are also good at 2-pointers or free throws? 
@@ -90,7 +93,7 @@ Equally interesting, instead of team average, if we were to look at the top 10 t
 
 
 \footnotesize
-```{r}
+```{r, echo=FALSE}
 fg3year <- aggregate(dataGameLogsTeam[, 35:36], list(dataGameLogsTeam$yearSeason), sum)
 colnames(fg3year)[1] <- "Year"
 fg3year <- fg3year %>% filter (Year >= 1986)
@@ -187,7 +190,7 @@ Q1_3
 Statistics of top 10 3-point shooters each year
 
 \footnotesize
-```{r}
+```{r, echo=FALSE}
 summary(fgyearplayer)
 
 # fgtopplayerbysuccessrate
@@ -275,7 +278,7 @@ We ran regressions on the team standings during the regular seasons by three poi
 However, as two pointers still contributed to a larger share of the total points scored by a given team than three pointers do. The absolute value of the coefficient on two point success rate is larger than that of three point success rate. This is not surprising because improving the same percentage of success rate in two point shooting and three point shooting means that the former will have a larger impact on improving the team’s ranking than the latter does.
 
 \footnotesize
-```{r}
+```{r, echo=FALSE}
 fgyear <- aggregate(dataGameLogsTeam[, 35:38], list(dataGameLogsTeam$yearSeason), sum)
 colnames(fgyear)[1] <- "Year"
 fgyear <- fgyear %>% filter (Year >= 1986)
@@ -357,7 +360,7 @@ Q2_2
 Based on the regression that we ran the three pointer accuracy on a given player’s tenure in the NBA, The coefficient is positive and statistically significant at 5%, so we believe as players play longer in the NBA, they tend to have better success rate at shooting three pointers, likely due to continuing training that help improve their three pointer shooting skills and also better understanding of the games and thus know when are the right times to shoot three pointers.
 
 \footnotesize
-```{r}
+```{r, echo=FALSE}
 standings <- read_csv("standings.csv")
 
 fgyearteam <- aggregate(dataGameLogsTeam[, 35:38], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$nameTeam), sum)
@@ -423,7 +426,7 @@ fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
 ```
 
 
-```{r}
+```{r, echo=FALSE}
 # fgplayer <- py$fgplayer
 load("fgplayer.Rdata")
 
