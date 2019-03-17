@@ -84,6 +84,11 @@ load('BaseEnvironment.Rdata')
 
 * **Q1.	It seems that players are getting better at making 3-pointers than 20 years ago (both on average and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?**
 
+Based on the chart 1 in the report, from 1986 to recent years, the average team in the NBA has improved their three pointer success rate, which is calculated by dividing the number of three pointers made by the number of three pointers attempted in each regular season. With that said, however, the success ratio has stayed largely flat since 1998, likely to the fact that the rules regarding three pointers have not changed and players on average have reached a plateau in terms of the three pointers success rate. 
+
+Equally interesting, instead of team average, if we were to look at the top 10 three point shooters in the league by success rate or by number of three pointers made, according to chart 2, the main driver behind their improved contribution to the total points score by their team is through the improvement of their three pointer success rate. Similar to the trend we saw among teams earlier, top three point shooters also improved their success rate over the time period that we specified here.
+
+
 \footnotesize
 ```{r}
 fg3year <- aggregate(dataGameLogsTeam[, 35:36], list(dataGameLogsTeam$yearSeason), sum)
@@ -264,6 +269,11 @@ Its debut, in the 1979-80 season, was inauspicious.
 There are many reasons for the rise of the 3-point shot, but one may simply be math. It took a while, but coaches finally stopped listening to the traditionalist naysayers and realized that a shot that is worth 50 percent more pays off, even if that shot is a little harder to make.
 
 “Teams have all caught on to the whole points-per-possession argument,” Lawrence Frank, the Nets’ coach at the time, said in 2009 as the 3 rate began to rapidly increase.
+
+We ran regressions on the team standings during the regular seasons by three pointer success rate and two pointer success rate. If team has a lower standings, in another word, smaller number for its ranking position, it is ranked closer to the top so the better team. Unsurprisingly, the regressions showed that independent variables three pointer success rate and two pointer success rate all have negative coefficients and they are statistically significant at 5%. This means when the three pointer and two pointer success rates increase, the teams tend to have smaller numbers as their rankings, i.e., better rankings. 
+
+However, as two pointers still contributed to a larger share of the total points scored by a given team than three pointers do. The absolute value of the coefficient on two point success rate is larger than that of three point success rate. This is not surprising because improving the same percentage of success rate in two point shooting and three point shooting means that the former will have a larger impact on improving the team’s ranking than the latter does.
+
 \footnotesize
 ```{r}
 fgyear <- aggregate(dataGameLogsTeam[, 35:38], list(dataGameLogsTeam$yearSeason), sum)
@@ -342,8 +352,9 @@ Q2_2
 \normalsize
 
 \pagebreak
-* **Q3.	Teams with more 3-pointers tend to be the better performing teams?**
-    -	**Any insights between standings and 3-pointers?**
+* **Q3.	Are there any relationship between players’ ages and 3-pointers?**
+
+Based on the regression that we ran the three pointer accuracy on a given player’s tenure in the NBA, The coefficient is positive and statistically significant at 5%, so we believe as players play longer in the NBA, they tend to have better success rate at shooting three pointers, likely due to continuing training that help improve their three pointer shooting skills and also better understanding of the games and thus know when are the right times to shoot three pointers.
 
 \footnotesize
 ```{r}
@@ -485,11 +496,10 @@ Above graph shows more players are trying 3 point shots than before. even though
 \pagebreak
 * **Q4. Players who are good at 3-pointers are also good at 2-pointers or free throws?**
 
-By regression.
+We ran a series of regressions and found that three pointer success rate has a positive and statistically significant relationship with free throw success rate, however, we are not able to draw such conclusions between the three pointer success rate and two pointer success rate. 
 
-Players who are good at free throws tend to be good at 3-pointers.
-However, 2-point field goal success rate is not related with 3-point field goal success rate!!!
-Why?
+A couple of factors that could have contributed to this observation. Players in NBA tend to specialize in three pointer shooting vs two pointer shooting. These two specialization often mean that they need to make a trade off between which style of play to focus on at each other’s expense. Also, two pointer plays include lay ups and dunks that usually top three point shooters would not do because they tend to play in the peripheral of the court during the game. One can also argue in the NBA, there is a trade off between explosiveness and three point shooting consistency. The explosive quality is important to have do well in the two pointer style play and thus created this lack of positive correlation between three point success rate and two point success rate. 
+
 
 \footnotesize
 ```{r}
