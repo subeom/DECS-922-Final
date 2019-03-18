@@ -1,0 +1,781 @@
+---
+title: "National Basketball Association (NBA) and its recent trend regarding 3-pointers"
+subtitle: "Final Project, DECS-922: *Data Exploration*, Winter 2019"
+author: "Subeom Lee, Tianyi Peng, and Jieul Jang"
+date: "`r Sys.Date()`"
+header-includes:
+  - \usepackage{graphicx}
+  - \usepackage{grffile}
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
+  html_document:
+    df_print: paged
+linkcolor: cyan
+fontsize: 10pt
+colorlinks: yes
+---
+\hfill\break
+```{r echo=FALSE, out.width='90%', fig.align='center'}
+knitr::include_graphics('nba2.jpg')
+```
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+# To run this Rmarkdown fast, please download BaseDataForFinal.Rdata from https://github.com/subeom/DECS-922-Final
+# If you don't have the Rdata file, all data needed will be downloaded from the Internet.
+
+library(reshape2)
+library(broom)
+library(tidyverse)
+library(knitr)
+library(reticulate)
+library(gridExtra)
+library(purrr)
+
+opts_chunk$set(echo=FALSE,
+               cache.lazy=FALSE,
+               collapse=TRUE,
+               comment=NA,
+               warning=FALSE,
+               prompt=FALSE,
+               message=FALSE,
+               cache=TRUE
+               )
+options(digits=4, scipen=0)
+masterdoc <- knitr::current_input()
+
+fn <- c('BaseDataForFinal.Rdata')
+
+if (file.exists(fn)) {
+  load(fn)
+} else {
+  library(nbastatR)
+  library(future)
+  library(stringi)
+  
+  plan(multiprocess) 
+  
+  # This command takes a long time. Please download Rdata file from GitHub instead.
+  # https://github.com/subeom/DECS-922-Final
+  game_logs(seasons = 1986:2019, result_types = c("team", "player"))
+  dataGameLogsTeam$Team = substring(dataGameLogsTeam$slugMatchup, 1, 3)
+}
+```
+
+
+# Introduction
+
+
+\normalsize
+These observations made us interested in looking into this phenomenon further, especially whether these observations are exceptions to the normal or they represent a shifting trend in how teams play in the NBA. If NBA indeed has been going some changes in three-point shooting strategies, we would like to get a better understanding of the impact of the shifting strategies. Thus, we would like to answer the following questions to gain a better understanding how three-pointer shooting has evolved since 1986, while taking into considerations of dimensions such as teams' standings, player age, other scoring methods in the game and a few other factors.
+
+## Methodology
+
+\normalsize
+To conduct the necessary analysis, we used detailed historical data from the nbastatR package and chose the period from 1986 to present based on data availability and the fact that NBA has not announced major rule changes since then. This is important because major rule changes can introduce unintended biases into our analysis. ([link](http://asbcllc.com/nbastatR/index.html)) This is a comprehensive open-source package that has additional tools built in to help analyze the NBA data. Through some initial testing, we found that not all of the tools are effective at helping us understand the questions regarding the three-point shooting trend in the NBA and some of the additional functions in the NBA package are duplicated. However, we found the dataset to be helpful and sufficient to conduct the proposed research. 
+
+For additional data such as historical standings and salary information, that are not included in nbastatR package, we downloaded CSV files from Basketball-Reference.com ([link](https://www.basketball-reference.com/))
+
+The data from nbastatR (`dataGameLogsPlayer` & `dataGameLogsTeam`) contain all the variables available so we trimmed the data by selecting relevant variables for analysis of each question. When needed, we merged tables to create new data frame to run our analysis.
+
+
+## Examples of key questions (specific questions will be presented in the detailed analysis sections)
+* It seems that players are getting better at making 3-pointers than 10 or 20 years ago (both on average across the league and also among top 3-pointer shooters vs. top 3-pointer shooters) Is it true?
+
+* Teams with more 3-pointers tend to be the better performing teams in terms of league rankings? 
+
+* Are there any relationship between players’ ages and 3-pointers?
+
+* Somewhat related to the question above, we want to analyze whether players can drastically improve their three-point shooting skills over time or the skill is rather something people are born with.
+
+* Players who are good at 3-pointers are also good at 2-pointers or free throws?
+
+* Players with high salaries are good at 3-pointers? 
+
+* Show the 3-pointer statistics geographically based on players’ hometowns.
+
+* What are the expected average points of 3-pointers and 2-pointers? How should each team’s strategy change based on the data?
+
+\pagebreak
+
+# Team level questions
+
+* **Q1.	It seems that players are getting better at making 3-pointers than 20 years ago (both on average and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?**
+
+\normalsize
+Yes, the success rate of 3-pointers on average across the league has increased by about 7% since 1986.  
+
+Based on the chart Q1-1. Historical Shooting Success Rate in the report, from 1986 to recent years, the average team in the NBA has improved their three-pointer success rate, which is calculated by dividing the number of three-pointers made by the number of three-pointers attempted in each regular season. With that said, however, the success ratio has stayed largely flat since 1998, likely to the fact that the rules regarding three-pointers have not changed and players on average have reached a plateau in terms of improving their three-pointers success rate, in absence of new techniques or other strategy changes.
+\hfill\break
+\hfill\break
+\hfill\break
+\footnotesize
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+fgyear <- aggregate(dataGameLogsTeam[, 35:38], list(dataGameLogsTeam$yearSeason), sum)
+colnames(fgyear)[1] <- "Year"
+fgyear <- fgyear %>% filter (Year >= 1986)
+fgyear$pctfg3 <- fgyear$fg3mTeam / fgyear$fg3aTeam * 100
+fgyear$pctfg2 <- fgyear$fg2mTeam / fgyear$fg2aTeam * 100
+
+fgyearteam <- aggregate(dataGameLogsTeam[, 35:38], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$Team), sum)
+colnames(fgyearteam)[1] <- "Year"
+colnames(fgyearteam)[2] <- "Team"
+fgyearteam <- fgyearteam %>% filter (Year >= 1986)
+fgyearteam$pctfg3 <- fgyearteam$fg3mTeam / fgyearteam$fg3aTeam * 100
+fgyearteam$pctfg2 <- fgyearteam$fg2mTeam / fgyearteam$fg2aTeam * 100
+
+xaxisbreaks <- seq(1985, 2019, by=3)
+yaxisbreaks <- seq(15, 60, by=5)
+
+Q1_1 <- ggplot() +
+  geom_line(data=fgyearteam, aes(x=Year, y=pctfg3, group=Team, alpha=0.5), size=0.5) +
+  geom_line(data=fgyearteam, aes(x=Year, y=pctfg2, group=Team, alpha=0.5), size=0.5) +
+  geom_line(data=fgyear, aes(x=Year, y=pctfg3, colour="3-pt", alpha=0.9), size=2) +
+  geom_line(data=fgyear, aes(x=Year, y=pctfg2, colour="2-pt", alpha=0.9), size=2) +
+  guides(alpha=FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('Q1-1. Historical shooting Success Rate') +
+  theme(panel.background=element_rect(fill=NA)) +
+  theme(panel.grid.major.y=element_line(color="grey", linetype=2)) +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.title=element_blank()) +
+  scale_y_continuous(limits=c(15, 60), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)# +
+
+Q1_1
+```
+\normalsize
+\pagebreak
+
+\normalsize
+Equally interesting, instead of team average, if we were to look at the top 30 three-point shooters in the league by number of three-pointers made, according to chart Q1-2. 3 point success rate of top 30 players, the main driver behind their improved contribution to the total points score by their team is through the improvement of their three-pointer success rate. In another word, the average number of three-point attempts these top three-point shooters made have not changed significantly over time, but the success rate has improved. This observation is similar to the trend we saw in the earlier chart that showed the league average. It seems like the improvement in shooting technique has benefited everyone.
+
+Note: in the RMD file, we attempted to use Python to help execute some of our analysis but ultimately found more efficient ways to carry out our analysis. The Python code is still in the RMD file for your reference but omitted from this report.
+\hfill\break
+\hfill\break
+\hfill\break
+\footnotesize
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+dataGameLogsPlayer1986 <- dataGameLogsPlayer %>% filter(yearSeason >= 1986)
+
+if (!exists("fgplayer")) {
+  fgplayer <- aggregate(dataGameLogsPlayer1986[, 19:26], list(dataGameLogsPlayer1986$namePlayer), sum)
+  colnames(fgplayer)[1] <- "Player"
+  fgplayer$pctFG = NULL
+  fgplayer$pctFG3 = NULL
+  fgplayer$pctfg3 <- fgplayer$fg3m / fgplayer$fg3a * 100
+  fgplayer$pctfg2 <- fgplayer$fgm / fgplayer$fga * 100
+  fgplayer$pctft <- fgplayer$ftm / fgplayer$fta * 100
+  fgplayer <- fgplayer[order(-fgplayer$pctfg3),]
+}
+
+fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
+
+fn <- "fgplayer.Rdata"
+```
+
+```{python, message=FALSE, echo=FALSE, warning=FALSE}
+# Find firstYear and lastYear of each player using Python
+try:
+  fgplayer = r.fgplayer
+except:
+  import os.path
+  
+  if os.path.exists(r.fn) != True:
+    import pandas as pd
+    
+    fgplayer = r.fgplayer
+    fgplayer['firstYear'] = 2019
+    fgplayer['lastYear'] = 1986
+    
+    i=0
+    for player in fgplayer.values:
+      min = player[-2]
+      max = player[-1]
+      for yp in r.fgyearplayer.values:
+        if player[0] == yp[1]:
+          if max < yp[0]: max = yp[0]
+          if min > yp[0]: min = yp[0]
+      fgplayer.iloc[i,-1]=max
+      fgplayer.iloc[i,-2]=min
+      i += 1
+```
+
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+if (!exists("fgplayer")) {
+  if (file.exists(fn)) {
+    load(fn)
+  } else {
+    fgplayer <- py$fgplayer
+    save(fgplayer, file=fn)
+  }
+}
+
+fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
+fgplayer500 <- fgplayer100 %>% filter(fg3m >= 500)
+fgplayer1000 <- fgplayer500 %>% filter(fg3m >= 1000)
+fgplayer2000 <- fgplayer1000 %>% filter(fg3m >= 2000)
+fgyearplayer <- aggregate(dataGameLogsPlayer1986[, 19:26], list(dataGameLogsPlayer1986$yearSeason, dataGameLogsPlayer1986$namePlayer), sum)
+colnames(fgyearplayer)[1] <- "Year"
+colnames(fgyearplayer)[2] <- "Player"
+fgyearplayer$pctFG = NULL
+fgyearplayer$pctFG3 = NULL
+fgyearplayer$pctfg3 <- fgyearplayer$fg3m / fgyearplayer$fg3a * 100
+fgyearplayer$pctfg2 <- fgyearplayer$fgm / fgyearplayer$fga * 100
+fgyearplayer$pctft <- fgyearplayer$ftm / fgyearplayer$fta * 100
+
+# summary(fgyearplayer)
+
+fgyearplayer100 <- fgyearplayer %>% filter(Player %in% fgplayer100$Player)
+fgyearplayer1000 <- fgyearplayer100 %>% filter(Player %in% fgplayer1000$Player)
+fgyearplayer2000 <- fgyearplayer1000 %>% filter(Player %in% fgplayer2000$Player)
+
+# fgtopplayerbysuccessrate
+fgyeartopsr <-
+  fgyearplayer %>%
+  group_by(Year) %>%
+  filter(fg3m >= 29) %>%
+  mutate(Rank = order(order(pctfg3, decreasing = TRUE))) %>%
+  filter(Rank <= 10) %>%
+  arrange(Year, Rank)
+
+# fgyeartopsr
+
+# fgtopplayerbysuccessrateavg
+fgyeartopsravg <- aggregate(fgyeartopsr[, 3:8], list(fgyeartopsr$Year), sum)
+colnames(fgyeartopsravg)[1] <- "Year"
+fgyeartopsravg$pctfg3 <- fgyeartopsravg$fg3m / fgyeartopsravg$fg3a * 100
+fgyeartopsravg$pctfg2 <- fgyeartopsravg$fgm / fgyeartopsravg$fga * 100
+fgyeartopsravg$pctft <- fgyeartopsravg$ftm / fgyeartopsravg$fta * 100
+
+# fgyeartopplayerbymade
+fgyeartopm <-
+  fgyearplayer %>%
+  group_by(Year) %>%
+  filter(fg3m >= 29) %>%
+  mutate(Rank = order(order(fg3m, decreasing = TRUE))) %>%
+  filter(Rank <= 300) %>%
+  arrange(Year, Rank)
+
+# fgyeartopm
+
+# fgyeartopplayerbymadeavg
+fgyeartopmavg <- aggregate(fgyeartopm[, 3:8], list(fgyeartopm$Year), sum)
+colnames(fgyeartopmavg)[1] <- "Year"
+fgyeartopmavg$pctfg3 <- fgyeartopmavg$fg3m / fgyeartopmavg$fg3a * 100
+fgyeartopmavg$pctfg2 <- fgyeartopmavg$fgm / fgyeartopmavg$fga * 100
+fgyeartopmavg$pctft <- fgyeartopmavg$ftm / fgyeartopmavg$fta * 100
+
+# fgyeartop <- left_join (fgyeartopsr, fgyeartopm, by=c("Year"="Year", "Player"="Player"))
+
+xaxisbreaks <- seq(1986, 2019, by=3)
+yaxisbreaks <- seq(30, 50, by=5)
+
+Q1_2 <- ggplot() +
+  geom_line(data=fgyeartopsravg, aes(x=Year, y=pctfg3, colour='By Success Rate', alpha=0.5), size=2) +
+  geom_line(data=fgyeartopmavg, aes(x=Year, y=pctfg3, colour='By # of made', alpha=0.5), size=2) +
+  guides(alpha=FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('Q1-2. 3 point success rate of top 30 players') +
+  theme(panel.background=element_rect(fill=NA)) +
+  theme(panel.grid.major.y=element_line(color="grey", linetype=2)) +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.title=element_blank()) +
+  scale_y_continuous(limits=c(30, 50), breaks=yaxisbreaks) +
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks)
+
+Q1_2
+
+top9597sr <- fgyeartopsr %>% filter(Year>=1995) %>% filter(Year<=1997)
+top9597m <- fgyeartopm %>% filter(Year>=1995) %>% filter(Year<=1997)
+  
+```
+\normalsize
+
+
+
+
+\pagebreak
+
+* **Q2.	Teams with more 3-pointers tend to be the better performing teams?**
+
+\normalsize
+We ran regressions on the team standings during the regular seasons by three-pointer success rate and two pointer success rate. The dependent variable is a team's standing during a given season and the independent variables are that team's three-pointer success rate. We provided some variations of the regressions by looking at the success rate of two pointers and see how the inclusion of this independent variable may have on the regression results. If team has a lower standing, in another word, smaller number for its ranking position, it is ranked closer to the top so the better team. Unsurprisingly, the regressions showed that independent variables three-pointer success rate and two pointer success rate all have negative coefficients and they are statistically significant at 5%. This means when the three-pointer and two pointer success rates increase, the teams tend to have smaller numbers as their rankings, i.e., better rankings. 
+\hfill\break
+\hfill\break
+\hfill\break
+\footnotesize
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+if (!exists("playerStandings")) {
+  fn <- "standings.csv"
+
+  if (file.exists(fn)) {
+    playerStandings <- read_csv("Standings.csv")
+  } else {
+    print(paste0(fn, " not found. Please visit https://github.com/subeom/DECS-922-Final to download required files."))
+  }
+}
+
+fgyearteam <- aggregate(dataGameLogsTeam[, 35:38], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$nameTeam), sum)
+colnames(fgyearteam)[1] <- "Year"
+colnames(fgyearteam)[2] <- "nameTeam"
+fgyearteam <- fgyearteam %>% filter (Year >= 1986)
+fgyearteam$pctfg3 <- fgyearteam$fg3mTeam / fgyearteam$fg3aTeam * 100
+fgyearteam$pctfg2 <- fgyearteam$fg2mTeam / fgyearteam$fg2aTeam * 100
+
+playerStandings2 <- left_join(playerStandings, fgyearteam, by=c("Year" = "Year", "Team" = "nameTeam"))
+
+linearModel <- lm(Rk ~ pctfg3, data=playerStandings2)
+kable(tidy(linearModel), caption='Ranking with 3-pointer success rate' )
+
+linearModel2 <- lm(Rk ~ pctfg2, data=playerStandings2) 
+kable(tidy(linearModel2), caption='Ranking with 2-pointer success rate') 
+
+linearModel3 <- lm(Rk ~ pctfg3 + pctfg2, data=playerStandings2)
+kable(tidy(linearModel3), caption='Ranking with 3-pointer & 2-pointer success rate')
+
+linearModel4 <- lm(pctfg3 ~ pctfg2, data=playerStandings2)
+kable(tidy(linearModel4), caption='Regression of 3-pointer & 2-pointer success rate')
+```
+  
+\normalsize
+\pagebreak
+\normalsize
+However, as two pointers still contributed to a larger share of the total points scored by a given team than three-pointers do. The absolute value of the coefficient on two point success rate is larger than that of three-point success rate. This is not surprising because improving the same amount in shooting success rate for two point shooting and three-point shooting means that the former will have a larger impact on improving the team’s ranking than the latter does.
+
+
+Based on the charts illustrated below, we observed a few interesting points. Even though the three-point success rate has stayed largely flat in recent years, as shown in chart Q2-1. 3 Pointer Field Goal made vs tries, teams on average have increased the number of three-pointer attempts per game. This naturally led to an increase in the contribution of three-pointers to total points scored by a team at the expense of two pointers, as shown in the chart Q2-2. Field Goal Percentage.
+\hfill\break
+\hfill\break
+\hfill\break
+\footnotesize
+```{r, message=FALSE, echo=FALSE, warning=FALSE, fig.height = 8, fig.width = 10, fig.align = "center"}
+fg3year <- aggregate(dataGameLogsTeam[, 35:36], list(dataGameLogsTeam$yearSeason), sum)
+colnames(fg3year)[1] <- "Year"
+fg3year <- fg3year %>% filter (Year >= 1986)
+fg3year$pctfg3 <- fg3year$fg3mTeam / fg3year$fg3aTeam * 100
+
+fg3yearteam <- aggregate(dataGameLogsTeam[, 35:36], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$Team), sum)
+colnames(fg3yearteam)[1] <- "Year"
+colnames(fg3yearteam)[2] <- "Team"
+fg3yearteam <- fg3yearteam %>% filter (Year >= 1986)
+fg3yearteam$pctfg3 <- fg3yearteam$fg3mTeam / fg3yearteam$fg3aTeam * 100
+
+fg3yearavg <- aggregate(dataGameLogsTeam[, 35:36], list(dataGameLogsTeam$yearSeason), mean)
+colnames(fg3yearavg)[1] <- "Year"
+fg3yearavg <- fg3yearavg %>% filter (Year >= 1986)
+fg3yearavg$pctfg3 <- fg3yearavg$fg3mTeam / fg3yearavg$fg3aTeam * 100
+
+fg3yearteamavg <- aggregate(dataGameLogsTeam[, 35:36], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$Team), mean)
+colnames(fg3yearteamavg)[1] <- "Year"
+colnames(fg3yearteamavg)[2] <- "Team"
+fg3yearteamavg <- fg3yearteamavg %>% filter (Year >= 1986)
+fg3yearteamavg$pctfg3 <- fg3yearteamavg$fg3mTeam / fg3yearteamavg$fg3aTeam * 100
+
+xaxisbreaks <- seq(1986, 2019, by=3)
+yaxisbreaks <- seq(0, 50, by=3)
+
+Q2_1 <- ggplot() +
+  geom_line(data=fg3yearteamavg, aes(x=Year, y=fg3mTeam, group=Team, alpha=0.5), size=0.5) +
+  geom_line(data=fg3yearteamavg, aes(x=Year, y=fg3aTeam, group=Team, alpha=0.5), size=0.5) +
+  geom_line(data=fg3yearteamavg, aes(x=Year, y=pctfg3, group=Team, alpha=0.5), size=0.5) +
+  geom_line(data=fg3yearavg, aes(x=Year, y=fg3mTeam, colour="3-pt Made", alpha=0.9), size=2) +
+  geom_line(data=fg3yearavg, aes(x=Year, y=fg3aTeam, colour="3-pt Tries", alpha=0.9), size=2) +
+  geom_line(data=fg3year, aes(x=Year, y=pctfg3, colour="3-pt Success (%)", alpha=0.9), size=2) +
+  guides(alpha=FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('Q2-1. 3 Pointer Field Goal made vs tries') +
+  theme(panel.background=element_rect(fill=NA)) +
+  theme(panel.grid.major.y=element_line(color="grey", linetype=2)) +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.title=element_blank()) +
+  scale_y_continuous(limits=c(0, 50), breaks=yaxisbreaks) +
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks)
+  
+Q2_1
+
+
+fgallyearavg <- aggregate(dataGameLogsTeam[, 29:38], list(dataGameLogsTeam$yearSeason), mean)
+colnames(fgallyearavg)[1] <- "Year"
+fgallyearavg["plusminusTeam"] = NULL
+fgallyearavg["urlTeamSeasonLogo"] = NULL
+fgallyearavg["pfTeam"] = NULL
+fgallyearavg <- fgallyearavg %>% filter (Year >= 1986)
+fgallyearavg$pctpts3 <- fgallyearavg$fg3mTeam / fgallyearavg$ptsTeam * 100
+fgallyearavg$pctpts2 <- fgallyearavg$fg2mTeam / fgallyearavg$ptsTeam * 100
+fgallyearavg$pctptsft <- fgallyearavg$ftmTeam / fgallyearavg$ptsTeam * 100
+
+fgallyearteamavg <- aggregate(dataGameLogsTeam[, 29:38], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$Team), mean)
+colnames(fgallyearteamavg)[1] <- "Year"
+colnames(fgallyearteamavg)[2] <- "Team"
+fgallyearteamavg["plusminusTeam"] = NULL
+fgallyearteamavg["urlTeamSeasonLogo"] = NULL
+fgallyearteamavg["pfTeam"] = NULL
+fgallyearteamavg <- fgallyearteamavg %>% filter (Year >= 1986)
+fgallyearteamavg$pctpts3 <- fgallyearteamavg$fg3mTeam / fgallyearteamavg$ptsTeam * 100
+fgallyearteamavg$pctpts2 <- fgallyearteamavg$fg2mTeam / fgallyearteamavg$ptsTeam * 100
+fgallyearteamavg$pctptsft <- fgallyearteamavg$ftmTeam / fgallyearteamavg$ptsTeam * 100
+
+xaxisbreaks <- seq(1986, 2019, by=3)
+yaxisbreaks <- seq(0, 45, by=5)
+
+Q2_2 <- ggplot() +
+  geom_line(data=fgallyearteamavg, aes(x=Year, y=pctpts3, alpha=0.5, group=Team), size=0.5) +
+  geom_line(data=fgallyearteamavg, aes(x=Year, y=pctpts2, alpha=0.5, group=Team), size=0.5) +
+  geom_line(data=fgallyearteamavg, aes(x=Year, y=pctptsft, alpha=0.5, group=Team), size=0.5) +
+  geom_line(data=fgallyearavg, aes(x=Year, y=pctpts3, colour='3 Point', alpha=0.9), size=2) +
+  geom_line(data=fgallyearavg, aes(x=Year, y=pctpts2, colour='2 Point', alpha=0.9), size=2) +
+  geom_line(data=fgallyearavg, aes(x=Year, y=pctptsft, colour='Free Throw', alpha=0.9), size=2) +
+  guides(alpha=FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('Q2-2. Field Goal Percentage') +
+  theme(panel.background=element_rect(fill=NA)) +
+  theme(panel.grid.major.y=element_line(color="grey", linetype=2)) +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.title=element_blank()) +
+  scale_y_continuous(limits=c(0, 45), breaks=yaxisbreaks) +
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks)
+
+Q2_2
+```
+\normalsize
+\hfill\break
+\hfill\break
+\pagebreak
+
+
+
+\normalsize
+The expected points from each type of shot tell another interesting story. What we meant by this is the expected value of attempting a specific type of shot, a two pointer or three-pointer.
+
+The expected points of 2-point shots in 1986 was `fgyear$pctfg2[1986-1985]/100 * 2` = `r fgyear$pctfg2[1986-1985]/100*2`  
+The expected points of 3-point shots in 1986 was `fgyear$pctfg3[1986-1985]/100 * 3` = `r fgyear$pctfg3[1986-1985]/100*3`  
+   
+The expected points of 2-point shots in 2019 was `fgyear$pctfg2[2019-1985]/100 * 2` = `r fgyear$pctfg2[2019-1985]/100*2`  
+The expected points of 3-point shots in 2019 was `fgyear$pctfg3[2019-1985]/100 * 3` = `r fgyear$pctfg3[2019-1985]/100*3`  
+
+Teams started to pay more attention to 3-point shots after its first introduction in 1979, but not until around 1991 when the expected value of attempting a three-point shot exceeded the value of attempting a two point shot. Even after that, it took some time for teams to recognize this fact and make changes in their playing strategy to allocation more resources to shooting threes because the expected points of 3-point shots are higher than that of 2-point shots since early 90's.
+
+Looking back, three-pointer's debut, in the 1979-80 season, was inauspicious.([link](https://www.nytimes.com/2016/01/21/sports/basketball/how-the-nba-3-point-shot-went-from-gimmick-to-game-changer.html))
+
+There are many reasons for the rise of the 3-point shot, but one may simply be math. It took a while, but coaches finally stopped listening to the traditionalist naysayers and realized that a shot that is worth 50 percent more pays off, even if that shot is a little harder to make.
+
+“Teams have all caught on to the whole points-per-possession argument,” Lawrence Frank, the Nets’ coach at the time, said in 2009 as the 3 rate began to rapidly increase.  
+\hfill\break
+\hfill\break
+\hfill\break
+\footnotesize
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+fgyear$e2 = fgyear$pctfg2 / 100 * 2
+fgyear$e3 = fgyear$pctfg3 / 100 * 3
+
+xaxisbreaks <- seq(1985, 2019, by=3)
+yaxisbreaks <- seq(0.8, 1.15, by=0.05)
+
+Q2_2 <- ggplot() +
+  geom_line(data=fgyear, aes(x=Year, y=e3, color="3-pt", alpha=0.9), size=2) +
+  geom_line(data=fgyear, aes(x=Year, y=e2, color="2-pt", alpha=0.9), size=2) +
+  guides(alpha=FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('Expected points per each shot') +
+  theme(panel.background=element_rect(fill=NA)) +
+  theme(panel.grid.major.y=element_line(color="grey", linetype=2)) +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.title=element_blank()) +
+  scale_y_continuous(limits=c(0.8, 1.15), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)
+
+Q2_2
+
+```
+\normalsize
+
+\pagebreak
+* **Q3.	Is there any relationship between players’ ages and 3-pointers?**
+
+\normalsize
+Top three-pointer shooting players' three-point shooting skills do not bear significant relationship with their ages and length of career.  
+
+On the other hand, however, average players' three-point shooting success rate increased about 2 percent. 
+
+Based on the regressions that we ran regarding a player's three-pointer accuracy on a given player’s tenure in the NBA, the coefficient is positive and statistically significant at 5%, so we believe as players play longer in the NBA, they tend to have better success rate at shooting three-pointers, likely due to continuing training that help improve their three-pointer shooting skills and also better understanding of the games and thus know when the right times to shoot three-pointers are.
+\hfill\break
+\hfill\break
+\hfill\break
+\footnotesize
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+fgyearplayerjoined <- left_join(fgyearplayer, fgplayer, by=c("Player" = "Player"))
+fgyearplayerjoined$career = fgyearplayerjoined$Year - fgyearplayerjoined$firstYear + 1
+
+fgyearplayerjoined100 <- fgyearplayerjoined %>% filter(Player %in% fgplayer100$Player)
+fgyearplayerjoined1000 <- fgyearplayerjoined100 %>% filter(Player %in% fgplayer1000$Player)
+fgyearplayerjoined2000 <- fgyearplayerjoined1000 %>% filter(Player %in% fgplayer2000$Player)
+
+linearModel <- lm(pctfg3.x ~ career, data=fgyearplayerjoined2000)
+kable(tidy(linearModel), caption='3-pointer Success Rate & Tenure: for players with 2000+ 3-pointers')
+
+linearModel2 <- lm(pctfg3.x ~ career, data=fgyearplayerjoined1000)
+kable(tidy(linearModel2), caption='3-pointer Success Rate & Tenure: for players with 1000+ 3-pointers')
+
+linearModel3 <- lm(pctfg3.x ~ career, data=fgyearplayerjoined100)
+kable(tidy(linearModel3), caption='3-pointer Success Rate & Tenure: for players with 100+ 3-pointers')
+
+linearModel4 <- lm(pctfg3.x ~ career, data=fgyearplayerjoined)
+kable(tidy(linearModel4), caption='3-pointer Success Rate & Tenure: for all players')
+
+```
+\normalsize
+
+
+\pagebreak
+
+
+# Player level questions
+
+\normalsize
+We have identified some well-known players who excel at shooting three-pointers. The graphs show each one of these top players' career-long progression of 3-pointer success rate. Though these players might have played for different teams and during time, we observed some interesting trends. First, three-point shooting success rate generally goes up at the beginning, which is likely due to the fact that they received best in class training to help them improve their shooting skills when they first joined NBA. 
+
+After career-high, the three-point success rates would go down towards the end of his career, likely due to aging and decreased support from the team to let them shoot as many three-pointers as they used to. We also wanted to analyze whether players can drastically improve their three-point shooting skills over time or the skill is rather something people are born with. By looking at the regressions and charts, there is no dramatic increase in 3-pointer success rate over their career for the top players. 
+
+Maybe if we can check the players' data from NCAA or high school league, there might be different insight. However, based on NBA data, it does not appear that top three-point shooting players can significantly improve their three-point shooting skills over time, except some initial uptick at the very beginning of their NBA careers for some players.
+\hfill\break
+\hfill\break
+\hfill\break
+\footnotesize
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+xaxisbreaks <- seq(1986, 2019, by=8)
+yaxisbreaks <- seq(25, 55, by=5)
+
+plotYearPlayer2000 <- ggplot() +
+  geom_line(data=fgyearplayer2000, aes(x=Year, y=pctfg3, colour=Player), size=1, show.legend = FALSE) +
+  # geom_line(data=fgyearplayer2000, aes(x=Year, y=pctfg2, colour=Player), size=1, linetype="dotted", show.legend = FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point shot success rate by player') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(25, 55), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks) +
+  facet_wrap(~Player)
+plotYearPlayer2000
+
+
+```
+\normalsize
+
+
+\footnotesize
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+xaxisbreaks <- seq(1986, 2019, by=3)
+yaxisbreaks <- seq(20, 50, by=5)
+
+career100 <- melt(data=fgplayer100, id.var=c("Player","pctfg3"), measure.vars=c("firstYear", "lastYear"))
+
+plotPlayer100 <- ggplot() +
+  geom_line(data=career100, aes(x=value, y=pctfg3, color=Player), show.legend=FALSE, alpha=0.2) +
+  geom_point(data=fgplayer100, aes(x=lastYear, y=pctfg3, colour=Player, alpha=0.8),
+             size=fgplayer100$fg3a/300, show.legend=FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point success rate by player and year') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(20, 50), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks)
+# plotPlayer100
+
+
+xaxisbreaks <- seq(1986, 2019, by=3)
+yaxisbreaks <- seq(25, 50, by=5)
+
+career500 <- melt(data=fgplayer500, id.var=c("Player","pctfg3"), measure.vars=c("firstYear", "lastYear"))
+
+plotPlayer500 <- ggplot() +
+  geom_line(data=career500, aes(x=value, y=pctfg3, color=Player), show.legend=FALSE, alpha=0.2) +
+  geom_point(data=fgplayer500, aes(x=lastYear, y=pctfg3, colour=Player, alpha=0.8),
+             size=fgplayer500$fg3a/300, show.legend = FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point success rate by player and year') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(25, 50), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1986,2019), breaks=xaxisbreaks) +
+  geom_hline()
+# plotPlayer500
+
+xaxisbreaks <- seq(1986, 2019, by=5)
+yaxisbreaks <- seq(30, 45, by=5)
+
+career1000 <- melt(data=fgplayer1000, id.var=c("Player","pctfg3"), measure.vars=c("firstYear", "lastYear"))
+
+plotPlayer2000 <- ggplot() +
+  geom_point(data=fgyearplayer2000, aes(x=Year, y=pctfg3, colour=Player, alpha=0.8),
+             size=fgyearplayer2000$fg3a/50, show.legend = FALSE) +
+  xlab('Year') +
+  ylab(NULL) +
+  ggtitle('3 point success rate by player and year, size:# of 3-pointers attempted') +
+  theme(panel.background=element_rect(fill=NA), panel.grid.major.y=element_line(color="grey", linetype=2),
+        plot.title = element_text(hjust = 0.5)) + 
+  scale_y_continuous(limits=c(30, 45), breaks=yaxisbreaks, labels=yaxisbreaks) +
+  scale_x_continuous(limits=c(1986,2019)) +
+  facet_wrap(~Player)
+plotPlayer2000
+
+
+```
+\normalsize
+The bubble charts above graph show that across these top players, when their three-pointer success rates decreased over time, often the number of three-pointer attempts they made, represented by the size of the bubble, would also decrease. However, this observation is not that consistent as some players still attempted to make similar amount of three-pointers even as their success rates have decreased. This means sometimes the teams cannot make strategic decisions purely based on data as they need to take into consideration of players' personalities and needs the teams have regarding shooting threes. 
+
+\pagebreak
+* **Q4. Players who are good at 3-pointers are also good at 2-pointers or free throws?**
+
+\normalsize
+We ran a series of regressions and found that three-pointer success rate has a positive and statistically significant relationship with free throw success rate, however, we are not able to draw such conclusions between the three-pointer success rate and two pointer success rate. To be clear, the dependent variable in the regressions is the three-point shooting success rate in Table 9, 13 and 14. The other tables have number of three-pointers attempted as the dependent variable.  
+
+A couple of factors that could have contributed to this observation. Players in NBA tend to specialize in three-pointer shooting vs two pointer shooting. These two specialization often mean that they need to make a tradeoff between which style of play to focus on at each other’s expense. Also, two pointer plays include lay ups and dunks that usually top three-point shooters would not do because they tend to play in the peripheral of the court during the game. One can also argue in the NBA, there is a trade-off between explosiveness and three-point shooting consistency. The explosive quality is important to have do well in the two pointer style play and thus created this lack of positive correlation between three-point success rate and two point success rate.   
+  
+Below are for the players made more than 100 3-pointer shots.
+\hfill\break
+\footnotesize
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+linearModel <- lm(pctfg3 ~ pctfg2, data=fgplayer100)
+kable(tidy(linearModel), caption='3-pointer success rate & 2-pointer success rate')
+
+linearModel2 <- lm(fg3m ~ fgm, data=fgplayer100)
+kable(tidy(linearModel2), caption='3-pointer made & overall shots made')
+
+linearModel3 <- lm(fg3a ~ fga, data=fgplayer100)
+kable(tidy(linearModel3), caption='3-pointer attempted & overall shots attempted')
+
+linearModel4 <- lm(fg3a ~ fga + fta, data=fgplayer100)
+kable(tidy(linearModel4), caption='3-pointer attempted with overall shots & free-throws attempted')
+
+linearModel5 <- lm(pctfg3 ~ pctft, data=fgplayer100)
+kable(tidy(linearModel5), caption='3-pointer success rate & free-throw success rate')
+
+linearModel6 <- lm(pctfg2 ~ pctft, data=fgplayer100)
+kable(tidy(linearModel6), caption='2-pointer success rate & free-throw success rate')
+
+linearModel7 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer100)
+kable(tidy(linearModel7), caption='3-pointer success rate with 2-pointer success rate & free-throw success rate')
+```
+\normalsize
+
+\hfill\break
+\normalsize
+When we look at all the players, 2-pointers and 3-pointers are reverse-related. Maybe because of dunk shots?
+\hfill\break
+
+\footnotesize
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+linearModel7 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer)
+kable(tidy(linearModel7), caption='3-pointer success rate with 2-pointer success rate & free-throw success rate: for all players')
+```
+\normalsize
+
+\hfill\break
+\normalsize
+\normalsize
+Best players (more than 1,000 career 3-point field goals) are good at 2-pointers as well!!!
+\hfill\break
+
+\footnotesize
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+linearModel8 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer1000)
+kable(tidy(linearModel8), caption='3-pointer success rate with 2-pointer success rate & free-throw success rate: for players with 1000+ 3-pointers')
+
+linearModel9 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer2000)
+kable(tidy(linearModel9), caption='3-pointer success rate with 2-pointer success rate & free-throw success rate: for players with 2000+ 3-pointers')
+```
+\normalsize
+
+\pagebreak
+
+*	**Q5. Players with high salaries are good at 3-pointers?**
+
+\footnotesize
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+if (!exists("nbaInsiderSalaries")) {
+  fn <- 'nbaInsiderSalaries.Rdata'
+
+  if (file.exists(fn)){
+    load(fn)
+    # print(paste0(fn, " loaded."))
+  } else {
+    library(nbastatR)
+    library(future)
+    library(stringi)
+    
+    plan(multiprocess) 
+    nbaInsiderSalaries <- nba_insider_salaries(assume_player_opt_out = T, assume_team_doesnt_exercise = T, return_message = TRUE)
+    
+    save(nbaInsiderSalaries, file=fn)
+  }
+}
+fgplayersalary <- left_join(fgplayer, nbaInsiderSalaries, by=c("Player"="namePlayer"))
+
+fgplayersalary2 <- na.omit(fgplayersalary)
+fgplayersalary2$salaryinK = fgplayersalary2$value / 1000
+fgplayersalary2$salaryinM = fgplayersalary2$value / 1000000
+fgplayersalary2_1000 <- fgplayersalary2 %>% filter(Player %in% fgplayer1000$Player)
+
+linearModel <- lm(salaryinM ~ pctfg3, data=fgplayersalary2_1000)
+kable(tidy(linearModel), caption='Salary vs 3-pointer success rate: for players with 1000+ 3-pointers')
+linearModel2 <- lm(salaryinM ~ fg3m, data=fgplayersalary2_1000)
+kable(tidy(linearModel2), caption='Salary vs 3-pointer shots made: for players with 1000+ 3-pointers')
+```
+\normalsize
+
+\normalsize
+Based on the regressions we have above, the independent variable, success rate of 3-point shots impact the salary at a statistically significantly, 1% increase in the rate will increase the salary by $0.58 million.  However, it's difficult to say that 3-pointer success rate is the most important factor for one's salary since the regressions may suffer from omitted variable biases since there are many factors that are captured in this data base such as number of rebounds, defense skills and others. (2018-2019 season data only)
+
+\pagebreak
+
+* **Q6. Geographical analysis based on players' hometown**
+  
+\normalsize
+We wanted to explore whether players’ hometowns might have had any impact on their three-point shooting skills because different regions may emphasize different basketball playing styles including those that emphasize shooting three-pointers versus those that do not.
+\hfill\break
+\hfill\break
+\hfill\break
+\footnotesize
+```{r, echo=FALSE, comment=FALSE, warning=FALSE, error=FALSE}
+if (!exists("playerHometown")) {
+    fn <- "PlayerHometown.csv"
+
+  if (file.exists(fn)) {
+    playerHometown <- read_csv("PlayerHometown.csv")
+  } else {
+    print(paste0(fn, " not found. Please visit https://github.com/subeom/DECS-922-Final to download required files."))
+  }
+}
+
+fgplayerhometown <- left_join(fgplayer, playerHometown, by=c("Player"="Player")) %>% filter(!(is.na(State))) %>% na.omit(fgplayerhometown)
+
+fgplayerhometownState <- aggregate(fgplayerhometown[, 2:7], list(fgplayerhometown$State), sum)
+fgplayerhometownState <- fgplayerhometownState %>%
+  mutate(state=tolower(fgplayerhometownState[,1])) %>%
+  select(state, fgm, ftm, fg3m, fga, fta, fg3a)
+fgplayerhometownState$pctfg3 <- fgplayerhometownState$fg3m / fgplayerhometownState$fg3a * 100
+fgplayerhometownState$pctfg2 <- fgplayerhometownState$fgm / fgplayerhometownState$fga * 100
+fgplayerhometownState$pctft <- fgplayerhometownState$ftm / fgplayerhometownState$fta * 100
+
+states_map <- map_data("state")
+fghometown <- fgplayerhometownState %>% right_join(states_map, by=c('state'='region'))
+plot_State_map <- ggplot(fghometown) + 
+   geom_polygon(aes(x=long, y=lat, group=group, fill=pctfg3)) +
+   scale_fill_gradientn(colours=c('blue', 'green', 'yellow', 'red'))
+plot_State_map
+
+```
+\normalsize
+
+Looking at the map above, we found that there are a few outliers in the 3-point success rate, such as the states that are colored in grey, dark green and red. However, we want to be conscious of potential issues of letting a few individual players skew the results because some of the states may not have many players in the NBA, as a result, the few from those states that do play in the NBA may create the impression that is not necessarily consistent with the play style in the actual states.
+
+We would need additional analysis to find out the implication of this chart, but we would like to point out that players from the Midwest states seem to have higher than average three-pointer shooting accuracy, based on the dark brown color those states have. 
