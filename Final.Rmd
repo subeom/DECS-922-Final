@@ -14,7 +14,7 @@ fontsize: 10pt
 colorlinks: yes
 ---
 
-```{r, message=FALSE, echo=FALSE}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 # library(nbastatR)
 # library(future)
 # library(stringi)
@@ -43,6 +43,8 @@ opts_chunk$set(echo=FALSE,
                )
 options(digits=4, scipen=0)
 masterdoc <- knitr::current_input()
+
+load('BaseEnvironment.Rdata')
 ```
 
 \pagebreak
@@ -62,35 +64,29 @@ For additional data such as histrical standings and salary information, that are
 The data from nbastatR (`dataGameLogsPlayer` & `dataGameLogsTeam`) contain all the variables available so we trimmed the data by selecting relevant variables for analysis of each question. 
 
 
-## Some of the key questions that we are trying to understand are listed below:
-### It seems that players are getting better at making 3-pointers than 10 or 20 years ago (both on average across the league and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?
-### Teams with more 3-pointers tend to be the better performing teams? 
-### Are there any relationship between players’ ages and 3-pointers? 
-### Players who are good at 3-pointers are also good at 2-pointers or free throws? 
-### Players with high salaries are good at 3-pointers? 
-### We want to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are born with. 
-### Show the 3-pointer statistics geographically based on players’ hometowns. Maybe this help illustrates the different basketball playing style across different regions, both domestic and international. 
-### We would like to explore the importance of three point shooters in a given team by measuring the share of the team’s total salary over time. 
-### What are the expected average points of 3-pointers and 2-pointers? 
-### If the expected average point from 3-pointers is getting higher than that of 2-pointers, how should each team’s strategy chang?
+## Key questions
+* It seems that players are getting better at making 3-pointers than 10 or 20 years ago (both on average across the league and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?
+* Teams with more 3-pointers tend to be the better performing teams? 
+* Are there any relationship between players’ ages and 3-pointers?
+* Players who are good at 3-pointers are also good at 2-pointers or free throws? 
+* Players with high salaries are good at 3-pointers? 
+* We want to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are born with. 
+* Show the 3-pointer statistics geographically based on players’ hometowns. Maybe this help illustrates the different basketball playing style across different regions, both domestic and international. 
+* We would like to explore the importance of three point shooters in a given team by measuring the share of the team’s total salary over time. 
+* What are the expected average points of 3-pointers and 2-pointers? 
+* If the expected average point from 3-pointers is getting higher than that of 2-pointers, how should each team’s strategy chang?
 
 \pagebreak
-
-\footnotesize
-\medskip
-```{r echo=FALSE}
-load('BaseEnvironment.Rdata')
-```
-\normalsize
 
 # Team level questions
 
 * **Q1.	It seems that players are getting better at making 3-pointers than 20 years ago (both on average and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?**
 
+Yes, the success rate of 3-point field goal has been increased by about 9% since 1986.  
+
 Based on the chart 1 in the report, from 1986 to recent years, the average team in the NBA has improved their three pointer success rate, which is calculated by dividing the number of three pointers made by the number of three pointers attempted in each regular season. With that said, however, the success ratio has stayed largely flat since 1998, likely to the fact that the rules regarding three pointers have not changed and players on average have reached a plateau in terms of the three pointers success rate. 
 
-Equally interesting, instead of team average, if we were to look at the top 10 three point shooters in the league by success rate or by number of three pointers made, according to chart 2, the main driver behind their improved contribution to the total points score by their team is through the improvement of their three pointer success rate. Similar to the trend we saw among teams earlier, top three point shooters also improved their success rate over the time period that we specified here.
-
+Equally interesting, instead of team average, if we were to look at the top 30 three point shooters in the league by success rate or by number of three pointers made, according to chart 2, the main driver behind their improved contribution to the total points score by their team is through the improvement of their three pointer success rate. Similar to the trend we saw among teams earlier, top three point shooters also improved their success rate over the time period that we specified here.
 
 \footnotesize
 ```{r, echo=FALSE}
@@ -256,22 +252,12 @@ top9597m <- fgyeartopm %>% filter(Year>=1995) %>% filter(Year<=1997)
 ```
 \normalsize
 
-Yes, the success rate of 3-point field goal has been increased by about 9% since 1986.
+
+
 
 \pagebreak
 
-* **Q2.	If true, what could be the reasons for that?**
-    -	What are the expected average points of 3-pointers and 2-pointers? Show the historical data.
-    -	If the expected average point from 3-pointers is getting higher than that of
-      2-pointers, how should each team’s strategy changes
-
-https://www.nytimes.com/2016/01/21/sports/basketball/how-the-nba-3-point-shot-went-from-gimmick-to-game-changer.html
-
-Its debut, in the 1979-80 season, was inauspicious.
-
-There are many reasons for the rise of the 3-point shot, but one may simply be math. It took a while, but coaches finally stopped listening to the traditionalist naysayers and realized that a shot that is worth 50 percent more pays off, even if that shot is a little harder to make.
-
-“Teams have all caught on to the whole points-per-possession argument,” Lawrence Frank, the Nets’ coach at the time, said in 2009 as the 3 rate began to rapidly increase.
+* **Q2.	Teams with more 3-pointers tend to be the better performing teams?**
 
 We ran regressions on the team standings during the regular seasons by three pointer success rate and two pointer success rate. If team has a lower standings, in another word, smaller number for its ranking position, it is ranked closer to the top so the better team. Unsurprisingly, the regressions showed that independent variables three pointer success rate and two pointer success rate all have negative coefficients and they are statistically significant at 5%. This means when the three pointer and two pointer success rates increase, the teams tend to have smaller numbers as their rankings, i.e., better rankings. 
 
@@ -316,15 +302,13 @@ Q2_1
 ```
 \normalsize
 
-The expected points of 2-point shots in 1986 was 'r fgyear$pctfg2[1986-1985]/100' * 2 = 'r fgyear$pctfg2[1986-1985]/100*2'
-The expected points of 3-point shots in 1986 was 'r fgyear$pctfg3[1986-1985]/100' * 3 = 'r fgyear$pctfg3[1986-1985]/100*3'
+The expected points of 2-point shots in 1986 was `fgyear$pctfg2[1986-1985]/100 * 2` = `r fgyear$pctfg2[1986-1985]/100*2`  
+The expected points of 3-point shots in 1986 was `fgyear$pctfg3[1986-1985]/100 * 3` = `r fgyear$pctfg3[1986-1985]/100*3`  
+   
+The expected points of 2-point shots in 2019 was `fgyear$pctfg2[2019-1985]/100 * 2` = `r fgyear$pctfg2[2019-1985]/100*2`  
+The expected points of 3-point shots in 2019 was `fgyear$pctfg3[2019-1985]/100 * 3` = `r fgyear$pctfg3[2019-1985]/100*3`  
 
-The expected points of 2-point shots in 2019 was 'r fgyear$pctfg2[2019-1985]/100' * 2 = 'r fgyear$pctfg2[2019-1985]/100*2'
-The expected points of 3-point shots in 2019 was 'r fgyear$pctfg3[2019-1985]/100' * 3 = 'r fgyear$pctfg3[2019-1985]/100*3'
-
-Teams started to focus on 3-point shots after its first introduction in 1979,
-because the expected points of 3-point shots are higher than that of 2-point shots
-since early 90's.
+Teams started to focus on 3-point shots after its first introduction in 1979, because the expected points of 3-point shots are higher than that of 2-point shots since early 90's.
 
 
 \footnotesize
@@ -388,13 +372,8 @@ tidy(linearModel4)
 \normalsize
 
 Yes. However, pctfg2 is more relevant than pctfg3
-
-
-
 -	Focus on three point shooting is a strategy that started fairly recently, we can create a map to show where this strategy initially emerged and how fast it spreaded across the entire country.
 
-
-\pagebreak
 
 # Player level questions
 \footnotesize
@@ -627,22 +606,42 @@ However, based on NBA data, no big changes.
 -	Show the 3-pointer statistics geographically based on players’ hometowns. Maybe this help illustrates the different basketball playing style across different regions, both domestic and international.
 
 ```{r}
+library(gridExtra)
+
 playerHometown <- read_csv("PlayerHometown.csv")
 
-fgplayerhometown <- left_join(fgplayer, playerHometown, by=c("Player"="Player"))
-fgplayerhometown <- fgplayerhometown %>% filter(!(is.na(State)))
-fgplayerhometown <- na.omit(fgplayerhometown)
+fgplayerhometown <- left_join(fgplayer, playerHometown, by=c("Player"="Player")) %>% filter(!(is.na(State))) %>% na.omit(fgplayerhometown)
 
-fgplayerhometownState <- aggregate(fgplayerhometown[, 2:7], list(fgplayerhometown$State), sum)
-colnames(fgplayerhometownState)[1] <- "State"
+fgplayerhometownState <- aggregate(fgplayerhometown[, 2:7], list(fgplayerhometown$State), sum) %>% mutate(state=tolower(fgplayerhometownState[,1])) %>% select(state, fgm, ftm, fg3m, fga, fta, fg3a)
 fgplayerhometownState$pctfg3 <- fgplayerhometownState$fg3m / fgplayerhometownState$fg3a * 100
 fgplayerhometownState$pctfg2 <- fgplayerhometownState$fgm / fgplayerhometownState$fga * 100
 fgplayerhometownState$pctft <- fgplayerhometownState$ftm / fgplayerhometownState$fta * 100
 
 plotState <- ggplot() +
-  geom_point(data=fgplayerhometownState, aes(x=State, y=pctfg3, colour=State)) +
+  geom_point(data=fgplayerhometownState, aes(x=state, y=pctfg3, colour=state)) +
   xlab(NULL) +
   ylab(NULL)
 plotState
 
+states_map <- map_data("state")
+fghometown <- fgplayerhometownState %>% right_join(states_map, by=c('state'='region'))
+plot_State_map <- ggplot(fghometown) + 
+  geom_polygon(aes(x=long, y=lat, group=group, fill=pctfg3)) +
+  scale_fill_gradientn(colours=c('blue', 'green', 'yellow', 'red'))
+  coord_map('lagrange')
+plot_State_map
+
 ```
+
+
+    -	What are the expected average points of 3-pointers and 2-pointers? Show the historical data.
+    -	If the expected average point from 3-pointers is getting higher than that of
+      2-pointers, how should each team’s strategy changes
+      
+* Then why?
+
+Its debut, in the 1979-80 season, was inauspicious.([link](https://www.nytimes.com/2016/01/21/sports/basketball/how-the-nba-3-point-shot-went-from-gimmick-to-game-changer.html))
+
+There are many reasons for the rise of the 3-point shot, but one may simply be math. It took a while, but coaches finally stopped listening to the traditionalist naysayers and realized that a shot that is worth 50 percent more pays off, even if that shot is a little harder to make.
+
+“Teams have all caught on to the whole points-per-possession argument,” Lawrence Frank, the Nets’ coach at the time, said in 2009 as the 3 rate began to rapidly increase.
