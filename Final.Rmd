@@ -15,22 +15,21 @@ colorlinks: yes
 ---
 
 ```{r, message=FALSE, echo=FALSE}
-# library(nbastatR)
-# library(future)
-# library(stringi)
-# library(lubridate)
-# library(texreg)
-# library(ggpubr)
-# library(ggrepel)
-# library(janitor)
-# library(plotly)
+# To run this Rmarkdown fast, please download these data files from https://github.com/subeom/DECS-922-Final
+#
+#   1: dataGameLogsPlay.Rdata
+#   2: dataGameLogsTeam.Rdata
+#   3: df_nba_player_dics.Rdata
+#   4: fgplayer.Rdata
+#   5: nbaInsiderSalaries.Rdata
+#
+# If you don't have the Rdata files, the data will be downloaded from the Internet.
+
 library(reshape2)
 library(broom)
 library(tidyverse)
 library(knitr)
 library(reticulate)
-
-# plan(multiprocess) 
 
 opts_chunk$set(echo=FALSE,
                cache.lazy=FALSE,
@@ -79,7 +78,25 @@ The data from nbastatR (`dataGameLogsPlayer` & `dataGameLogsTeam`) contain all t
 \footnotesize
 \medskip
 ```{r echo=FALSE}
-load('BaseEnvironment.Rdata')
+fn <- c('dataGameLogsPlayer.Rdata', 'dataGameLogsTeam.Rdata', 'df_nba_player_dict.Rdata')
+
+if (file.exists(fn[1]) && file.exists(fn[2]) && file.exists(fn[3])) {
+  for (i in 1:length(fn)) {
+    load(fn[i])
+    print(paste0(fn[i], " loaded."))
+  }
+} else {
+  library(nbastatR)
+  library(future)
+  library(stringi)
+  
+  plan(multiprocess) 
+  
+  # This command takes a long time. Please download Rdata file from GitHub instead.
+  # https://github.com/subeom/DECS-922-Final
+  game_logs(seasons = 1986:2019, result_types = c("team", "player"))
+  dataGameLogsTeam$Team = substring(dataGameLogsTeam$slugMatchup, 1, 3)
+}
 ```
 \normalsize
 
@@ -190,8 +207,85 @@ Q1_3
 Statistics of top 10 3-point shooters each year
 
 \footnotesize
+
+```{r}
+dataGameLogsPlayer1986 <- dataGameLogsPlayer %>% filter(yearSeason >= 1986)
+
+fgplayer <- aggregate(dataGameLogsPlayer1986[, 19:26], list(dataGameLogsPlayer1986$namePlayer), sum)
+colnames(fgplayer)[1] <- "Player"
+fgplayer$pctFG = NULL
+fgplayer$pctFG3 = NULL
+
+fgplayer$pctfg3 <- fgplayer$fg3m / fgplayer$fg3a * 100
+fgplayer$pctfg2 <- fgplayer$fgm / fgplayer$fga * 100
+fgplayer$pctft <- fgplayer$ftm / fgplayer$fta * 100
+
+fgplayer <- fgplayer[order(-fgplayer$pctfg3),]
+fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
+
+fn <- "fgplayer.Rdata"
+```
+
+```{python}
+# Find firstYear and lastYear of each player using Python
+
+import os.path
+if os.path.exists(r.fn) != True:
+
+  import pandas as pd
+  
+  fgplayer = r.fgplayer
+  fgplayer['firstYear'] = 2019
+  fgplayer['lastYear'] = 1986
+  
+  print(fgplayer.head(5))
+  print(fgplayer.tail(5))
+  
+  i=0
+  for player in fgplayer.values:
+    min = player[-2]
+    max = player[-1]
+    for yp in r.fgyearplayer.values:
+      if player[0] == yp[1]:
+        if max < yp[0]: max = yp[0]
+        if min > yp[0]: min = yp[0]
+    fgplayer.iloc[i,-1]=max
+    fgplayer.iloc[i,-2]=min
+    i += 1
+    
+  print(fgplayer.head(5))
+  print(fgplayer.tail(5))
+
+```
+
 ```{r, echo=FALSE}
+if (file.exists(fn)) {
+  load(fn)
+} else {
+  fgplayer <- py$fgplayer
+  save(fgplayer, file=fn)
+}
+
+fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
+fgplayer500 <- fgplayer %>% filter(fg3m >= 500)
+fgplayer1000 <- fgplayer100 %>% filter(fg3m >= 1000)
+fgplayer2000 <- fgplayer1000 %>% filter(fg3m >= 2000)
+
+fgyearplayer <- aggregate(dataGameLogsPlayer1986[, 19:26], list(dataGameLogsPlayer1986$yearSeason, dataGameLogsPlayer1986$namePlayer), sum)
+colnames(fgyearplayer)[1] <- "Year"
+colnames(fgyearplayer)[2] <- "Player"
+fgyearplayer$pctFG = NULL
+fgyearplayer$pctFG3 = NULL
+
+fgyearplayer$pctfg3 <- fgyearplayer$fg3m / fgyearplayer$fg3a * 100
+fgyearplayer$pctfg2 <- fgyearplayer$fgm / fgyearplayer$fga * 100
+fgyearplayer$pctft <- fgyearplayer$ftm / fgyearplayer$fta * 100
+
 summary(fgyearplayer)
+
+fgyearplayer100 <- fgyearplayer %>% filter(Player %in% fgplayer100$Player)
+fgyearplayer1000 <- fgyearplayer100 %>% filter(Player %in% fgplayer1000$Player)
+fgyearplayer2000 <- fgyearplayer1000 %>% filter(Player %in% fgplayer2000$Player)
 
 # fgtopplayerbysuccessrate
 fgyeartopsr <-
@@ -398,43 +492,8 @@ Yes. However, pctfg2 is more relevant than pctfg3
 
 # Player level questions
 \footnotesize
-```{r}
-dataGameLogsPlayer1986 <- dataGameLogsPlayer %>% filter(yearSeason >= 1986)
-
-fgyearplayer <- aggregate(dataGameLogsPlayer1986[, 19:26], list(dataGameLogsPlayer1986$yearSeason, dataGameLogsPlayer1986$namePlayer), sum)
-colnames(fgyearplayer)[1] <- "Year"
-colnames(fgyearplayer)[2] <- "Player"
-fgyearplayer$pctFG = NULL
-fgyearplayer$pctFG3 = NULL
-
-fgyearplayer$pctfg3 <- fgyearplayer$fg3m / fgyearplayer$fg3a * 100
-fgyearplayer$pctfg2 <- fgyearplayer$fgm / fgyearplayer$fga * 100
-fgyearplayer$pctft <- fgyearplayer$ftm / fgyearplayer$fta * 100
-
-fgplayer <- aggregate(dataGameLogsPlayer1986[, 19:26], list(dataGameLogsPlayer1986$namePlayer), sum)
-colnames(fgplayer)[1] <- "Player"
-fgplayer$pctFG = NULL
-fgplayer$pctFG3 = NULL
-
-fgplayer$pctfg3 <- fgplayer$fg3m / fgplayer$fg3a * 100
-fgplayer$pctfg2 <- fgplayer$fgm / fgplayer$fga * 100
-fgplayer$pctft <- fgplayer$ftm / fgplayer$fta * 100
-
-fgplayer <- fgplayer[order(-fgplayer$pctfg3),]
-fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
-
-```
-
 
 ```{r, echo=FALSE}
-# fgplayer <- py$fgplayer
-load("fgplayer.Rdata")
-
-fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
-fgplayer500 <- fgplayer %>% filter(fg3m >= 500)
-fgplayer1000 <- fgplayer100 %>% filter(fg3m >= 1000)
-fgplayer2000 <- fgplayer1000 %>% filter(fg3m >= 2000)
-
 xaxisbreaks <- seq(1986, 2019, by=3)
 yaxisbreaks <- seq(20, 50, by=5)
 
@@ -547,11 +606,6 @@ tidy(linearModel8)
 -. Are there any relationship between players’ ages and 3-pointers? Both total and average.
 
 ```{r}
-fgyearplayer100 <- fgyearplayer %>% filter(Player %in% fgplayer100$Player)
-fgyearplayer1000 <- fgyearplayer100 %>% filter(Player %in% fgplayer1000$Player)
-fgyearplayer2000 <- fgyearplayer1000 %>% filter(Player %in% fgplayer2000$Player)
-
-
 xaxisbreaks <- seq(1985, 2019, by=3)
 yaxisbreaks <- seq(25, 55, by=5)
 
@@ -598,7 +652,22 @@ Average players' success rate is increased by 0.4% in one year. Not bad...?
 
 2018-2019 season data only
 ```{r}
-# nbaInsiderSalaries <- nba_insider_salaries(assume_player_opt_out = T, assume_team_doesnt_exercise = T, return_message = TRUE)
+fn <- 'nbaInsiderSalaries.Rdata'
+
+if (file.exists(fn)){
+  load(fn)
+  print(paste0(fn, " loaded."))
+} else {
+  library(nbastatR)
+  library(future)
+  library(stringi)
+  
+  plan(multiprocess) 
+
+  nbaInsiderSalaries <- nba_insider_salaries(assume_player_opt_out = T, assume_team_doesnt_exercise = T, return_message = TRUE)
+  
+  save(nbaInsiderSalaries, file=fn)
+}
 
 fgplayersalary <- left_join(fgplayer, nbaInsiderSalaries, by=c("Player"="namePlayer"))
 
@@ -627,6 +696,12 @@ However, based on NBA data, no big changes.
 -	Show the 3-pointer statistics geographically based on players’ hometowns. Maybe this help illustrates the different basketball playing style across different regions, both domestic and international.
 
 ```{r}
+library(ggplot2)
+library(tidyverse)
+library(mapdata)
+library(ggmap)
+library(gridExtra)
+
 playerHometown <- read_csv("PlayerHometown.csv")
 
 fgplayerhometown <- left_join(fgplayer, playerHometown, by=c("Player"="Player"))
@@ -639,10 +714,31 @@ fgplayerhometownState$pctfg3 <- fgplayerhometownState$fg3m / fgplayerhometownSta
 fgplayerhometownState$pctfg2 <- fgplayerhometownState$fgm / fgplayerhometownState$fga * 100
 fgplayerhometownState$pctft <- fgplayerhometownState$ftm / fgplayerhometownState$fta * 100
 
-plotState <- ggplot() +
-  geom_point(data=fgplayerhometownState, aes(x=State, y=pctfg3, colour=State)) +
+numberofplayerstate <- fgplayerhometown %>% group_by(State) %>% tally()
+
+fgplayerhometownState <- fgplayerhometownState %>% left_join(numberofplayerstate, by=c("State"="State"))
+fgplayerhometownState$state <- tolower(fgplayerhometownState$State)
+
+states_map <- map_data("state") ## ggplot
+states <- tibble(stateshort=state.abb, statelong=tolower(state.name))
+
+mapState <- ggplot(fgplayerhometownState, aes(map_id=state)) +
+  geom_map(aes(fill=pctfg3), map=states_map) +
+  coord_map("albers", at0 = 45.5, lat1 = 29.5) +
+  expand_limits(x = states_map$long, y = states_map$lat) +
+  scale_fill_gradientn(colours=c('red', 'yellow', 'green')) +
   xlab(NULL) +
   ylab(NULL)
-plotState
+mapState
 
+fgplayerhometownState2 <- fgplayerhometownState %>% filter(n>=3)
+
+mapState2 <- ggplot(filter(fgplayerhometownState2, pctfg3 > 30 && pctfg3 < 40), aes(map_id=state)) +
+  geom_map(aes(fill=pctfg3), map=states_map) +
+  coord_map("albers", at0 = 45.5, lat1 = 29.5) +
+  expand_limits(x = states_map$long, y = states_map$lat) +
+  scale_fill_gradientn(colours=c('red', 'yellow', 'green')) +
+  xlab(NULL) +
+  ylab(NULL)
+mapState2
 ```

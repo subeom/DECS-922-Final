@@ -22,3 +22,7 @@ forcats
 plotly
 reticulate
 reshape2
+maps
+mapdata
+ggmap
+gridExtra
