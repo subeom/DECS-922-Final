@@ -514,7 +514,13 @@ kable(tidy(linearModel4), caption='3-pointer Success Rate & Tenure: for all play
 
 \normalsize
 
-We have identified some well known players who excel at shooting three pointers. The graphs show each one of these top players' career-long progress of 3-pointer success rate. Though these players might have played for different teams and during time, we observed some interesting trends. First, three point shooting success rate generally go up at the begining, which is likely due to the fact that they receive best in class training to help them improve their shooting skills. After career-high, the three point success rates would go down towards the end of his career. We also wanted to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are borned with. By above regression and below graphs, there is no dramatic increase in 3-pointer success rate. Maybe if we can check the players' data from NCAA or high school league, there might be different insight. However, based on NBA data, it does not appear that top three point shooting players can significantly improve their three point shooting skills over time, except some initial uptick at the very beginning of their NBA careers for some players.
+We have identified some well known players who excel at shooting three pointers. The graphs show each one of these top players' career-long progression of 3-pointer success rate. Though these players might have played for different teams and during time, we observed some interesting trends. First, three point shooting success rate generally go up at the begining, which is likely due to the fact that they received best in class training to help them improve their shooting skills when they first joined NBA. 
+
+After career-high, the three point success rates would go down towards the end of his career, likely due to aging and decreased support from the team to let them shoot as many three pointers as they used to. We also wanted to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are born with. By looking at the regressions and charts, there is no dramatic increase in 3-pointer success rate over their career for the top players. 
+
+Maybe if we can check the players' data from NCAA or high school league, there might be different insight. However, based on NBA data, it does not appear that top three point shooting players can significantly improve their three point shooting skills over time, except some initial uptick at the very beginning of their NBA careers for some players.
+
+
 
 \footnotesize
 ```{r}
@@ -600,12 +606,12 @@ plotPlayer2000
 
 ```
 \normalsize
-Above graph shows more players are trying 3 point shots than before. even though the average success rate is similar.
+The bubble charts above graph show that across these top players, when their three pointer success rates decreaed over time, often the number of three pointer attempts they made, represented by the size of the bubble, would also decrease. However, this observation is not that consistent as some players still attempted to make similar amount of three pointers even as their success rates have decreased. This means sometimes the teams cannot make strategic decisions purely based on data as they need to take into consideration of players' personalities and needs the teams have regarding shooting threes. 
 
 \pagebreak
 * **Q4. Players who are good at 3-pointers are also good at 2-pointers or free throws?**
 
-We ran a series of regressions and found that three pointer success rate has a positive and statistically significant relationship with free throw success rate, however, we are not able to draw such conclusions between the three pointer success rate and two pointer success rate. 
+We ran a series of regressions and found that three pointer success rate has a positive and statistically significant relationship with free throw success rate, however, we are not able to draw such conclusions between the three pointer success rate and two pointer success rate. To be clear, the depdent variable in the regressions is the three point shooting success rate in Table 9, 13 and 14. The other tables have number of three pointers attempted as the dependent variable.  
 
 A couple of factors that could have contributed to this observation. Players in NBA tend to specialize in three pointer shooting vs two pointer shooting. These two specialization often mean that they need to make a trade off between which style of play to focus on at each other’s expense. Also, two pointer plays include lay ups and dunks that usually top three point shooters would not do because they tend to play in the peripheral of the court during the game. One can also argue in the NBA, there is a trade off between explosiveness and three point shooting consistency. The explosive quality is important to have do well in the two pointer style play and thus created this lack of positive correlation between three point success rate and two point success rate.   
   
@@ -700,14 +706,14 @@ kable(tidy(linearModel2), caption='Salary vs 3-pointer shots made: for players w
 \normalsize
 
 
-When career success rate of 3-point shots impact the salary statistically significantly, 1%p increase in the rate will increase the salary by $0.58 million.  However, It's difficult to say that 3-pointer success rate is the most important factor for one's salary. (2018-2019 season data only)
+Based on the regressions we have above, the indepdent variable, success rate of 3-point shots impact the salary at a statistically significantly, 1% increase in the rate will increase the salary by $0.58 million.  However, It's difficult to say that 3-pointer success rate is the most important factor for one's salary since the regressions may suffer from omitted variable biases since there are many factors that are captured in this data base such as number of rebounds, defense skills and others. (2018-2019 season data only)
 
 \pagebreak
 
 * **Q5. Geographical analysis based on players' hometown**
   
   
-Let's show the 3-pointer statistics geographically based on players’ hometowns. This might illustrate the different basketball playing style across different region.
+We wanted to explore whether players’ hometowns might have had any impact on their three point shooting skills because different regions may emphasize different basketball playing styles including those that emphasie shooting three pointers versus those that do not.
 
 ```{r, echo=FALSE, comment=FALSE, warning=FALSE, error=FALSE}
 if (!exists("playerHometown")) {
@@ -746,4 +752,6 @@ plot_State_map
 ```
 \normalsize
 
-Above map shows that there are a few outliers in the 3-point success rate. We would need additional analysis to find out the implication of this chart. It maybe due to different playing style by region/NCAA team. 
+Looking at the map above, we found that there are a few outliers in the 3-point success rate, such as the states that are colored in grey, dark green and red. However, we want to be conscious of potential issues of letting a few individual players skew the results because some of the states may not have many players in the NBA, as a result, the few from those states that do play in the NBA may create the impression that is not necessarily consistent with the play style in the actual states.
+
+We would need additional analysis to find out the implication of this chart, but we would like to point out that players from the midwest states seem to have higher than average three pointer shooting accuracy, based on the dark brown color those states have. 
