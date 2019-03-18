@@ -22,27 +22,17 @@ colorlinks: yes
 knitr::include_graphics('nba2.jpg')
 ```
 ```{r, message=FALSE, echo=FALSE, warning=FALSE}
-# To run this Rmarkdown fast, please download these data files from https://github.com/subeom/DECS-922-Final
-#
-#   1: dataGameLogsPlayer.Rdata
-#   2: dataGameLogsTeam.Rdata
-#   3: df_nba_player_dics.Rdata
-#   4: fgplayer.Rdata
-#   5: nbaInsiderSalaries.Rdata
-#
-# If you don't have the Rdata files, the data will be downloaded from the Internet.
-#
-# In addition, below raw data files are needed as well. These files cannot be downloaded from the Internet.
-#
-#   6: standings.csv
-#   7: PlayerHometown.csv
-#
+# To run this Rmarkdown fast, please download BaseDataForFinal.Rdata from https://github.com/subeom/DECS-922-Final
+# If you don't have the Rdata file, all data needed will be downloaded from the Internet.
 
 library(reshape2)
 library(broom)
 library(tidyverse)
 library(knitr)
 library(reticulate)
+library(gridExtra)
+library(purrr)
+
 opts_chunk$set(echo=FALSE,
                cache.lazy=FALSE,
                collapse=TRUE,
@@ -55,12 +45,10 @@ opts_chunk$set(echo=FALSE,
 options(digits=4, scipen=0)
 masterdoc <- knitr::current_input()
 
-fn <- c('dataGameLogsPlayer.Rdata', 'dataGameLogsTeam.Rdata', 'df_nba_player_dict.Rdata')
-if (file.exists(fn[1]) && file.exists(fn[2]) && file.exists(fn[3])) {
-  for (i in 1:length(fn)) {
-    load(fn[i])
-#    print(paste0(fn[i], " loaded."))
-  }
+fn <- c('BaseDataForFinal.Rdata')
+
+if (file.exists(fn)) {
+  load(fn)
 } else {
   library(nbastatR)
   library(future)
@@ -149,11 +137,6 @@ Q1_1 <- ggplot() +
   scale_x_continuous(limits=c(1985,2019), breaks=xaxisbreaks)# +
 
 Q1_1
-
-
-
-
-
 ```
 \normalsize
 \pagebreak
@@ -177,40 +160,39 @@ fn <- "fgplayer.Rdata"
 
 ```{python}
 # Find firstYear and lastYear of each player using Python
-import os.path
-if os.path.exists(r.fn) != True:
-  import pandas as pd
-  
+try:
   fgplayer = r.fgplayer
-  fgplayer['firstYear'] = 2019
-  fgplayer['lastYear'] = 1986
+except:
+  import os.path
   
-  print(fgplayer.head(5))
-  print(fgplayer.tail(5))
-  
-  i=0
-  for player in fgplayer.values:
-    min = player[-2]
-    max = player[-1]
-    for yp in r.fgyearplayer.values:
-      if player[0] == yp[1]:
-        if max < yp[0]: max = yp[0]
-        if min > yp[0]: min = yp[0]
-    fgplayer.iloc[i,-1]=max
-    fgplayer.iloc[i,-2]=min
-    i += 1
+  if os.path.exists(r.fn) != True:
+    import pandas as pd
     
-  print(fgplayer.head(5))
-  print(fgplayer.tail(5))
+    fgplayer = r.fgplayer
+    fgplayer['firstYear'] = 2019
+    fgplayer['lastYear'] = 1986
+    
+    i=0
+    for player in fgplayer.values:
+      min = player[-2]
+      max = player[-1]
+      for yp in r.fgyearplayer.values:
+        if player[0] == yp[1]:
+          if max < yp[0]: max = yp[0]
+          if min > yp[0]: min = yp[0]
+      fgplayer.iloc[i,-1]=max
+      fgplayer.iloc[i,-2]=min
+      i += 1
 ```
 
 ```{r, echo=FALSE}
-if (file.exists(fn)) {
+if (!exists("fgplayer") && file.exists(fn)) {
   load(fn)
 } else {
   fgplayer <- py$fgplayer
   save(fgplayer, file=fn)
 }
+
 fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
 fgplayer500 <- fgplayer %>% filter(fg3m >= 500)
 fgplayer1000 <- fgplayer100 %>% filter(fg3m >= 1000)
@@ -304,7 +286,15 @@ We ran regressions on the team standings during the regular seasons by three poi
 
 \footnotesize
 ```{r, echo=FALSE}
-standings <- read_csv("standings.csv")
+if (!exists("playerStandings")) {
+  fn <- "standings.csv"
+
+  if (file.exists(fn)) {
+    playerStandings <- read_csv("Standings.csv")
+  } else {
+    print(paste0(fn, " not found. Please visit https://github.com/subeom/DECS-922-Final to download required files."))
+  }
+}
 
 fgyearteam <- aggregate(dataGameLogsTeam[, 35:38], list(dataGameLogsTeam$yearSeason, dataGameLogsTeam$nameTeam), sum)
 colnames(fgyearteam)[1] <- "Year"
@@ -313,18 +303,18 @@ fgyearteam <- fgyearteam %>% filter (Year >= 1986)
 fgyearteam$pctfg3 <- fgyearteam$fg3mTeam / fgyearteam$fg3aTeam * 100
 fgyearteam$pctfg2 <- fgyearteam$fg2mTeam / fgyearteam$fg2aTeam * 100
 
-standings2 <- left_join(standings, fgyearteam, by=c("Year" = "Year", "Team" = "nameTeam"))
+playerStandings2 <- left_join(playerStandings, fgyearteam, by=c("Year" = "Year", "Team" = "nameTeam"))
 
-linearModel <- lm(Rk ~ pctfg3, data=standings2)
+linearModel <- lm(Rk ~ pctfg3, data=playerStandings2)
 kable(tidy(linearModel), caption='Ranking with 3-pointer success rate' )
 
-linearModel2 <- lm(Rk ~ pctfg2, data=standings2) 
+linearModel2 <- lm(Rk ~ pctfg2, data=playerStandings2) 
 kable(tidy(linearModel2), caption='Ranking with 2-pointer success rate') 
 
-linearModel3 <- lm(Rk ~ pctfg3 + pctfg2, data=standings2)
+linearModel3 <- lm(Rk ~ pctfg3 + pctfg2, data=playerStandings2)
 kable(tidy(linearModel3), caption='Ranking with 3-pointer & 2-pointer success rate')
 
-linearModel4 <- lm(pctfg3 ~ pctfg2, data=standings2)
+linearModel4 <- lm(pctfg3 ~ pctfg2, data=playerStandings2)
 kable(tidy(linearModel4), caption='Regression of 3-pointer & 2-pointer success rate')
 ```
   
@@ -667,21 +657,23 @@ kable(tidy(linearModel8), caption='3-pointer success rate with 2-pointer success
 
 \footnotesize
 ```{r}
-fn <- 'nbaInsiderSalaries.Rdata'
-if (file.exists(fn)){
-  load(fn)
-  # print(paste0(fn, " loaded."))
-} else {
-  library(nbastatR)
-  library(future)
-  library(stringi)
-  
-  plan(multiprocess) 
-  nbaInsiderSalaries <- nba_insider_salaries(assume_player_opt_out = T, assume_team_doesnt_exercise = T, return_message = TRUE)
-  
-  save(nbaInsiderSalaries, file=fn)
-}
+if (!exists("nbaInsiderSalaries")) {
+  fn <- 'nbaInsiderSalaries.Rdata'
 
+  if (file.exists(fn)){
+    load(fn)
+    # print(paste0(fn, " loaded."))
+  } else {
+    library(nbastatR)
+    library(future)
+    library(stringi)
+    
+    plan(multiprocess) 
+    nbaInsiderSalaries <- nba_insider_salaries(assume_player_opt_out = T, assume_team_doesnt_exercise = T, return_message = TRUE)
+    
+    save(nbaInsiderSalaries, file=fn)
+  }
+}
 fgplayersalary <- left_join(fgplayer, nbaInsiderSalaries, by=c("Player"="namePlayer"))
 
 fgplayersalary2 <- na.omit(fgplayersalary)
@@ -705,13 +697,18 @@ When career success rate of 3-point shots impact the salary statistically signif
 * **Q5. Geographical analysis based on players' hometown**
   
   
-Let's show the 3-pointer statistics geographically based on players’ hometowns. Maybe this help illustrates the different basketball playing style across different region..
+Let's show the 3-pointer statistics geographically based on players’ hometowns. This might illustrate the different basketball playing style across different region.
 
 ```{r, echo=FALSE, comment=FALSE, warning=FALSE, error=FALSE}
-library(gridExtra)
-library(purrr)
+if (!exists("playerHometown")) {
+    fn <- "PlayerHometown.csv"
 
-playerHometown <- read_csv("PlayerHometown.csv")
+  if (file.exists(fn)) {
+    playerHometown <- read_csv("PlayerHometown.csv")
+  } else {
+    print(paste0(fn, " not found. Please visit https://github.com/subeom/DECS-922-Final to download required files."))
+  }
+}
 
 fgplayerhometown <- left_join(fgplayer, playerHometown, by=c("Player"="Player")) %>% filter(!(is.na(State))) %>% na.omit(fgplayerhometown)
 
@@ -723,11 +720,11 @@ fgplayerhometownState$pctfg3 <- fgplayerhometownState$fg3m / fgplayerhometownSta
 fgplayerhometownState$pctfg2 <- fgplayerhometownState$fgm / fgplayerhometownState$fga * 100
 fgplayerhometownState$pctft <- fgplayerhometownState$ftm / fgplayerhometownState$fta * 100
 
-plotState <- ggplot() +
-  geom_point(data=fgplayerhometownState, aes(x=state, y=pctfg3, colour=state)) +
-  xlab(NULL) +
-  ylab(NULL)
-plotState
+# plotState <- ggplot() +
+#   geom_point(data=fgplayerhometownState, aes(x=state, y=pctfg3, colour=state)) +
+#   xlab(NULL) +
+#   ylab(NULL)
+# plotState
 
 states_map <- map_data("state")
 fghometown <- fgplayerhometownState %>% right_join(states_map, by=c('state'='region'))
