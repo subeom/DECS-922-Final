@@ -17,7 +17,6 @@ fontsize: 10pt
 colorlinks: yes
 ---
 \hfill\break
-\hfill\break
 ```{r echo=FALSE, out.width='90%', fig.align='center'}
 knitr::include_graphics('nba2.jpg')
 ```
@@ -63,17 +62,17 @@ if (file.exists(fn)) {
 }
 ```
 
-\pagebreak
 
 # Introduction
 
-In the 2018-2019 NBA regular season, we observed births of many new 3 pointers records. For example, Klay Thompson from the Golden State Warriors, made 14 3-pointers in Chicago last October. ([link](https://ftw.usatoday.com/2018/10/klay-thompson-14-3-pointers-nba-record)) James Harden, a key player from the Houston Rockets who is known for being deadly at making three pointers, created a record of second longest 30-point games streak, 32 games, in last February. This is the best record created after 1962. ([link](http://www.espn.com/nba/story/_/id/26081187/james-harden-historic-30-point-streak-ends-28-win-vs-atlanta)) Also, Klay Thompson mentioned earlier succeeded in getting 10 consecutive 3-pointers in last January. ([link](https://www.newsweek.com/klay-thompson-three-pointers-nba-records-golden-state-warriors-los-angeles-1299559)) 
 
-These observations made us interested in looking into this phenomenon further, especially whether these observations are exceptions to the normal or they represent a shifting trend in how teams play in the NBA. If NBA indeed has been going some changes in three point shooting strategies, we would like to get a better understanding of the impact of the shifting strategies. Thus, we would like to answer the following questions to gain a better understanding how three pointer shooting has evolved since 1986, while taking into considerations of dimensions such as teams' standings, player age, other scoring methods in the game and a few other factors.
+\normalsize
+These observations made us interested in looking into this phenomenon further, especially whether these observations are exceptions to the normal or they represent a shifting trend in how teams play in the NBA. If NBA indeed has been going some changes in three-point shooting strategies, we would like to get a better understanding of the impact of the shifting strategies. Thus, we would like to answer the following questions to gain a better understanding how three-pointer shooting has evolved since 1986, while taking into considerations of dimensions such as teams' standings, player age, other scoring methods in the game and a few other factors.
 
 ## Methodology
 
-To conduct the necessary analysis, we used detailed historical data from the nbastatR package and chose the period from 1986 to present based on data availability and the fact that NBA has not announced major rule changes since then. This is important because major rule changes can introduce unintended biases into our analysis. ([link](http://asbcllc.com/nbastatR/index.html)) This is a comprehensive open-source package that has additional tools built in to help analyze the NBA data. Through some initial testing, we found that not all of the tools are effective at helping us understand the questions regarding the three point shooting trend in the NBA and some of the additional functions in the NBA package are duplicated. However, we found the dataset to be helpful and sufficient to conduct the proposed research. 
+\normalsize
+To conduct the necessary analysis, we used detailed historical data from the nbastatR package and chose the period from 1986 to present based on data availability and the fact that NBA has not announced major rule changes since then. This is important because major rule changes can introduce unintended biases into our analysis. ([link](http://asbcllc.com/nbastatR/index.html)) This is a comprehensive open-source package that has additional tools built in to help analyze the NBA data. Through some initial testing, we found that not all of the tools are effective at helping us understand the questions regarding the three-point shooting trend in the NBA and some of the additional functions in the NBA package are duplicated. However, we found the dataset to be helpful and sufficient to conduct the proposed research. 
 
 For additional data such as historical standings and salary information, that are not included in nbastatR package, we downloaded CSV files from Basketball-Reference.com ([link](https://www.basketball-reference.com/))
 
@@ -87,17 +86,15 @@ The data from nbastatR (`dataGameLogsPlayer` & `dataGameLogsTeam`) contain all t
 
 * Are there any relationship between players’ ages and 3-pointers?
 
-* Somewhat related to the question above, we want to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are born with.
+* Somewhat related to the question above, we want to analyze whether players can drastically improve their three-point shooting skills over time or the skill is rather something people are born with.
 
 * Players who are good at 3-pointers are also good at 2-pointers or free throws?
 
 * Players with high salaries are good at 3-pointers? 
 
-* Show the 3-pointer statistics geographically based on players’ hometowns. Maybe this help illustrates the different basketball playing style across different regions, both domestic and international. 
+* Show the 3-pointer statistics geographically based on players’ hometowns.
 
-* What are the expected average points of 3-pointers and 2-pointers? 
-
-* If the expected average point from 3-pointers is getting higher than that of 2-pointers, how should each team’s strategy chang?
+* What are the expected average points of 3-pointers and 2-pointers? How should each team’s strategy change based on the data?
 
 \pagebreak
 
@@ -105,12 +102,15 @@ The data from nbastatR (`dataGameLogsPlayer` & `dataGameLogsTeam`) contain all t
 
 * **Q1.	It seems that players are getting better at making 3-pointers than 20 years ago (both on average and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?**
 
+\normalsize
 Yes, the success rate of 3-pointers on average across the league has increased by about 7% since 1986.  
 
-Based on the chart Q1−1. Historical Shooting Success Rate in the report, from 1986 to recent years, the average team in the NBA has improved their three pointer success rate, which is calculated by dividing the number of three pointers made by the number of three pointers attempted in each regular season. With that said, however, the success ratio has stayed largely flat since 1998, likely to the fact that the rules regarding three pointers have not changed and players on average have reached a plateau in terms of improving their three pointers success rate, in absence of new techniques or other strategy changes. 
-
+Based on the chart Q1-1. Historical Shooting Success Rate in the report, from 1986 to recent years, the average team in the NBA has improved their three-pointer success rate, which is calculated by dividing the number of three-pointers made by the number of three-pointers attempted in each regular season. With that said, however, the success ratio has stayed largely flat since 1998, likely to the fact that the rules regarding three-pointers have not changed and players on average have reached a plateau in terms of improving their three-pointers success rate, in absence of new techniques or other strategy changes.
+\hfill\break
+\hfill\break
+\hfill\break
 \footnotesize
-```{r, echo=FALSE}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 fgyear <- aggregate(dataGameLogsTeam[, 35:38], list(dataGameLogsTeam$yearSeason), sum)
 colnames(fgyear)[1] <- "Year"
 fgyear <- fgyear %>% filter (Year >= 1986)
@@ -148,26 +148,34 @@ Q1_1
 \normalsize
 \pagebreak
 
-Equally interesting, instead of team average, if we were to look at the top 30 three point shooters in the league by number of three pointers made, according to chart Q1−2. 3 point success rate of top 30 players, the main driver behind their improved contribution to the total points score by their team is through the improvement of their three pointer success rate. In another word, the average number of three point attempts these top three point shooters made have not changed significantly over time, but the success rate has improved. This observation is similar to the trend we saw in the earlier chart that showed the league average. It seems like the improvement in shooting technique has benefited everyone.
+\normalsize
+Equally interesting, instead of team average, if we were to look at the top 30 three-point shooters in the league by number of three-pointers made, according to chart Q1-2. 3 point success rate of top 30 players, the main driver behind their improved contribution to the total points score by their team is through the improvement of their three-pointer success rate. In another word, the average number of three-point attempts these top three-point shooters made have not changed significantly over time, but the success rate has improved. This observation is similar to the trend we saw in the earlier chart that showed the league average. It seems like the improvement in shooting technique has benefited everyone.
 
 Note: in the RMD file, we attempted to use Python to help execute some of our analysis but ultimately found more efficient ways to carry out our analysis. The Python code is still in the RMD file for your reference but omitted from this report.
-
+\hfill\break
+\hfill\break
+\hfill\break
 \footnotesize
-```{r, echo=FALSE}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 dataGameLogsPlayer1986 <- dataGameLogsPlayer %>% filter(yearSeason >= 1986)
-fgplayer <- aggregate(dataGameLogsPlayer1986[, 19:26], list(dataGameLogsPlayer1986$namePlayer), sum)
-colnames(fgplayer)[1] <- "Player"
-fgplayer$pctFG = NULL
-fgplayer$pctFG3 = NULL
-fgplayer$pctfg3 <- fgplayer$fg3m / fgplayer$fg3a * 100
-fgplayer$pctfg2 <- fgplayer$fgm / fgplayer$fga * 100
-fgplayer$pctft <- fgplayer$ftm / fgplayer$fta * 100
-fgplayer <- fgplayer[order(-fgplayer$pctfg3),]
+
+if (!exists("fgplayer")) {
+  fgplayer <- aggregate(dataGameLogsPlayer1986[, 19:26], list(dataGameLogsPlayer1986$namePlayer), sum)
+  colnames(fgplayer)[1] <- "Player"
+  fgplayer$pctFG = NULL
+  fgplayer$pctFG3 = NULL
+  fgplayer$pctfg3 <- fgplayer$fg3m / fgplayer$fg3a * 100
+  fgplayer$pctfg2 <- fgplayer$fgm / fgplayer$fga * 100
+  fgplayer$pctft <- fgplayer$ftm / fgplayer$fta * 100
+  fgplayer <- fgplayer[order(-fgplayer$pctfg3),]
+}
+
 fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
+
 fn <- "fgplayer.Rdata"
 ```
 
-```{python}
+```{python, message=FALSE, echo=FALSE, warning=FALSE}
 # Find firstYear and lastYear of each player using Python
 try:
   fgplayer = r.fgplayer
@@ -194,7 +202,7 @@ except:
       i += 1
 ```
 
-```{r, echo=FALSE}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 if (!exists("fgplayer") && file.exists(fn)) {
   load(fn)
 } else {
@@ -203,8 +211,8 @@ if (!exists("fgplayer") && file.exists(fn)) {
 }
 
 fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
-fgplayer500 <- fgplayer %>% filter(fg3m >= 500)
-fgplayer1000 <- fgplayer100 %>% filter(fg3m >= 1000)
+fgplayer500 <- fgplayer100 %>% filter(fg3m >= 500)
+fgplayer1000 <- fgplayer500 %>% filter(fg3m >= 1000)
 fgplayer2000 <- fgplayer1000 %>% filter(fg3m >= 2000)
 fgyearplayer <- aggregate(dataGameLogsPlayer1986[, 19:26], list(dataGameLogsPlayer1986$yearSeason, dataGameLogsPlayer1986$namePlayer), sum)
 colnames(fgyearplayer)[1] <- "Year"
@@ -291,10 +299,13 @@ top9597m <- fgyeartopm %>% filter(Year>=1995) %>% filter(Year<=1997)
 
 * **Q2.	Teams with more 3-pointers tend to be the better performing teams?**
 
-We ran regressions on the team standings during the regular seasons by three pointer success rate and two pointer success rate. The depdent variable ia a team's standing during a given season and the indepdent variables are that team's three pointer success rate. We provided some variations of the regressions by looking at the success rate of two pointers and see how the inclusion of this indepdent variable may have on the regression results. If team has a lower standings, in another word, smaller number for its ranking position, it is ranked closer to the top so the better team. Unsurprisingly, the regressions showed that independent variables three pointer success rate and two pointer success rate all have negative coefficients and they are statistically significant at 5%. This means when the three pointer and two pointer success rates increase, the teams tend to have smaller numbers as their rankings, i.e., better rankings. 
-
+\normalsize
+We ran regressions on the team standings during the regular seasons by three-pointer success rate and two pointer success rate. The dependent variable is a team's standing during a given season and the independent variables are that team's three-pointer success rate. We provided some variations of the regressions by looking at the success rate of two pointers and see how the inclusion of this independent variable may have on the regression results. If team has a lower standing, in another word, smaller number for its ranking position, it is ranked closer to the top so the better team. Unsurprisingly, the regressions showed that independent variables three-pointer success rate and two pointer success rate all have negative coefficients and they are statistically significant at 5%. This means when the three-pointer and two pointer success rates increase, the teams tend to have smaller numbers as their rankings, i.e., better rankings. 
+\hfill\break
+\hfill\break
+\hfill\break
 \footnotesize
-```{r, echo=FALSE}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 if (!exists("playerStandings")) {
   fn <- "standings.csv"
 
@@ -330,14 +341,15 @@ kable(tidy(linearModel4), caption='Regression of 3-pointer & 2-pointer success r
 \normalsize
 \pagebreak
 \normalsize
+However, as two pointers still contributed to a larger share of the total points scored by a given team than three-pointers do. The absolute value of the coefficient on two point success rate is larger than that of three-point success rate. This is not surprising because improving the same amount in shooting success rate for two point shooting and three-point shooting means that the former will have a larger impact on improving the team’s ranking than the latter does.
 
-However, as two pointers still contributed to a larger share of the total points scored by a given team than three pointers do. The absolute value of the coefficient on two point success rate is larger than that of three point success rate. This is not surprising because improving the same amount in shooting success rate for two point shooting and three point shooting means that the former will have a larger impact on improving the team’s ranking than the latter does.
 
-
-Based on the charts illustrated below, we observed a few interesting points. Even though the three point success rate has stayed largely flat in recent years, as shown in chart Q2−1. 3 Pointer Field Goal made vs tries, teams on average have increased the number of three pointer attempts per game. This naturually led to an increase in the contribution of three pointers to total points scored by a team at the expense of two pointers, as shown in the chart Q2−2. Field Goal Percentage.
-
+Based on the charts illustrated below, we observed a few interesting points. Even though the three-point success rate has stayed largely flat in recent years, as shown in chart Q2-1. 3 Pointer Field Goal made vs tries, teams on average have increased the number of three-pointer attempts per game. This naturally led to an increase in the contribution of three-pointers to total points scored by a team at the expense of two pointers, as shown in the chart Q2-2. Field Goal Percentage.
+\hfill\break
+\hfill\break
+\hfill\break
 \footnotesize
-```{r, echo=FALSE}
+```{r, message=FALSE, echo=FALSE, warning=FALSE, fig.height = 8, fig.width = 10, fig.align = "center"}
 fg3year <- aggregate(dataGameLogsTeam[, 35:36], list(dataGameLogsTeam$yearSeason), sum)
 colnames(fg3year)[1] <- "Year"
 fg3year <- fg3year %>% filter (Year >= 1986)
@@ -429,9 +441,14 @@ Q2_2 <- ggplot() +
 Q2_2
 ```
 \normalsize
+\hfill\break
+\hfill\break
 \pagebreak
 
-The expected points from each type of shot tell another interesting story. What we meant by this is the expected value of attempting a specific type of shot, a two pointer or three pointer.
+
+
+\normalsize
+The expected points from each type of shot tell another interesting story. What we meant by this is the expected value of attempting a specific type of shot, a two pointer or three-pointer.
 
 The expected points of 2-point shots in 1986 was `fgyear$pctfg2[1986-1985]/100 * 2` = `r fgyear$pctfg2[1986-1985]/100*2`  
 The expected points of 3-point shots in 1986 was `fgyear$pctfg3[1986-1985]/100 * 3` = `r fgyear$pctfg3[1986-1985]/100*3`  
@@ -439,16 +456,18 @@ The expected points of 3-point shots in 1986 was `fgyear$pctfg3[1986-1985]/100 *
 The expected points of 2-point shots in 2019 was `fgyear$pctfg2[2019-1985]/100 * 2` = `r fgyear$pctfg2[2019-1985]/100*2`  
 The expected points of 3-point shots in 2019 was `fgyear$pctfg3[2019-1985]/100 * 3` = `r fgyear$pctfg3[2019-1985]/100*3`  
 
-Teams started to pay more attention to 3-point shots after its first introduction in 1979, but not until around 1991 when the expected value of attempting a three point shot exceeded the value of attempting a two point shot. Even after that, it took some time for teams to recognize this fact and make changes in their playing strategy to allocation more resources to shooting threes because the expected points of 3-point shots are higher than that of 2-point shots since early 90's.
+Teams started to pay more attention to 3-point shots after its first introduction in 1979, but not until around 1991 when the expected value of attempting a three-point shot exceeded the value of attempting a two point shot. Even after that, it took some time for teams to recognize this fact and make changes in their playing strategy to allocation more resources to shooting threes because the expected points of 3-point shots are higher than that of 2-point shots since early 90's.
 
 Looking back, three-pointer's debut, in the 1979-80 season, was inauspicious.([link](https://www.nytimes.com/2016/01/21/sports/basketball/how-the-nba-3-point-shot-went-from-gimmick-to-game-changer.html))
 
 There are many reasons for the rise of the 3-point shot, but one may simply be math. It took a while, but coaches finally stopped listening to the traditionalist naysayers and realized that a shot that is worth 50 percent more pays off, even if that shot is a little harder to make.
 
 “Teams have all caught on to the whole points-per-possession argument,” Lawrence Frank, the Nets’ coach at the time, said in 2009 as the 3 rate began to rapidly increase.  
-
+\hfill\break
+\hfill\break
+\hfill\break
 \footnotesize
-```{r}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 fgyear$e2 = fgyear$pctfg2 / 100 * 2
 fgyear$e3 = fgyear$pctfg3 / 100 * 3
 
@@ -475,16 +494,19 @@ Q2_2
 \normalsize
 
 \pagebreak
-* **Q3.	Are there any relationship between players’ ages and 3-pointers?**
+* **Q3.	Is there any relationship between players’ ages and 3-pointers?**
 
-Top three pointer shooting players' three point shooting skills do not bear significant relationship with their ages and length of career.  
+\normalsize
+Top three-pointer shooting players' three-point shooting skills do not bear significant relationship with their ages and length of career.  
 
-On the other hand, however, average players' three point shooting success rate increased about 2 percent. 
+On the other hand, however, average players' three-point shooting success rate increased about 2 percent. 
 
-Based on the regressions that we ran regarding a player's three pointer accuracy on a given player’s tenure in the NBA, The coefficient is positive and statistically significant at 5%, so we believe as players play longer in the NBA, they tend to have better success rate at shooting three pointers, likely due to continuing training that help improve their three pointer shooting skills and also better understanding of the games and thus know when are the right times to shoot three pointers.
-
+Based on the regressions that we ran regarding a player's three-pointer accuracy on a given player’s tenure in the NBA, the coefficient is positive and statistically significant at 5%, so we believe as players play longer in the NBA, they tend to have better success rate at shooting three-pointers, likely due to continuing training that help improve their three-pointer shooting skills and also better understanding of the games and thus know when the right times to shoot three-pointers are.
+\hfill\break
+\hfill\break
+\hfill\break
 \footnotesize
-```{r, echo=FALSE}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 fgyearplayerjoined <- left_join(fgyearplayer, fgplayer, by=c("Player" = "Player"))
 fgyearplayerjoined$career = fgyearplayerjoined$Year - fgyearplayerjoined$firstYear + 1
 
@@ -510,20 +532,20 @@ kable(tidy(linearModel4), caption='3-pointer Success Rate & Tenure: for all play
 
 \pagebreak
 
+
 # Player level questions
 
 \normalsize
+We have identified some well-known players who excel at shooting three-pointers. The graphs show each one of these top players' career-long progression of 3-pointer success rate. Though these players might have played for different teams and during time, we observed some interesting trends. First, three-point shooting success rate generally goes up at the beginning, which is likely due to the fact that they received best in class training to help them improve their shooting skills when they first joined NBA. 
 
-We have identified some well known players who excel at shooting three pointers. The graphs show each one of these top players' career-long progression of 3-pointer success rate. Though these players might have played for different teams and during time, we observed some interesting trends. First, three point shooting success rate generally go up at the begining, which is likely due to the fact that they received best in class training to help them improve their shooting skills when they first joined NBA. 
+After career-high, the three-point success rates would go down towards the end of his career, likely due to aging and decreased support from the team to let them shoot as many three-pointers as they used to. We also wanted to analyze whether players can drastically improve their three-point shooting skills over time or the skill is rather something people are born with. By looking at the regressions and charts, there is no dramatic increase in 3-pointer success rate over their career for the top players. 
 
-After career-high, the three point success rates would go down towards the end of his career, likely due to aging and decreased support from the team to let them shoot as many three pointers as they used to. We also wanted to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are born with. By looking at the regressions and charts, there is no dramatic increase in 3-pointer success rate over their career for the top players. 
-
-Maybe if we can check the players' data from NCAA or high school league, there might be different insight. However, based on NBA data, it does not appear that top three point shooting players can significantly improve their three point shooting skills over time, except some initial uptick at the very beginning of their NBA careers for some players.
-
-
-
+Maybe if we can check the players' data from NCAA or high school league, there might be different insight. However, based on NBA data, it does not appear that top three-point shooting players can significantly improve their three-point shooting skills over time, except some initial uptick at the very beginning of their NBA careers for some players.
+\hfill\break
+\hfill\break
+\hfill\break
 \footnotesize
-```{r}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 xaxisbreaks <- seq(1986, 2019, by=8)
 yaxisbreaks <- seq(25, 55, by=5)
 
@@ -546,7 +568,7 @@ plotYearPlayer2000
 
 
 \footnotesize
-```{r}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 xaxisbreaks <- seq(1986, 2019, by=3)
 yaxisbreaks <- seq(20, 50, by=5)
 
@@ -606,19 +628,20 @@ plotPlayer2000
 
 ```
 \normalsize
-The bubble charts above graph show that across these top players, when their three pointer success rates decreaed over time, often the number of three pointer attempts they made, represented by the size of the bubble, would also decrease. However, this observation is not that consistent as some players still attempted to make similar amount of three pointers even as their success rates have decreased. This means sometimes the teams cannot make strategic decisions purely based on data as they need to take into consideration of players' personalities and needs the teams have regarding shooting threes. 
+The bubble charts above graph show that across these top players, when their three-pointer success rates decreased over time, often the number of three-pointer attempts they made, represented by the size of the bubble, would also decrease. However, this observation is not that consistent as some players still attempted to make similar amount of three-pointers even as their success rates have decreased. This means sometimes the teams cannot make strategic decisions purely based on data as they need to take into consideration of players' personalities and needs the teams have regarding shooting threes. 
 
 \pagebreak
 * **Q4. Players who are good at 3-pointers are also good at 2-pointers or free throws?**
 
-We ran a series of regressions and found that three pointer success rate has a positive and statistically significant relationship with free throw success rate, however, we are not able to draw such conclusions between the three pointer success rate and two pointer success rate. To be clear, the depdent variable in the regressions is the three point shooting success rate in Table 9, 13 and 14. The other tables have number of three pointers attempted as the dependent variable.  
+\normalsize
+We ran a series of regressions and found that three-pointer success rate has a positive and statistically significant relationship with free throw success rate, however, we are not able to draw such conclusions between the three-pointer success rate and two pointer success rate. To be clear, the dependent variable in the regressions is the three-point shooting success rate in Table 9, 13 and 14. The other tables have number of three-pointers attempted as the dependent variable.  
 
-A couple of factors that could have contributed to this observation. Players in NBA tend to specialize in three pointer shooting vs two pointer shooting. These two specialization often mean that they need to make a trade off between which style of play to focus on at each other’s expense. Also, two pointer plays include lay ups and dunks that usually top three point shooters would not do because they tend to play in the peripheral of the court during the game. One can also argue in the NBA, there is a trade off between explosiveness and three point shooting consistency. The explosive quality is important to have do well in the two pointer style play and thus created this lack of positive correlation between three point success rate and two point success rate.   
+A couple of factors that could have contributed to this observation. Players in NBA tend to specialize in three-pointer shooting vs two pointer shooting. These two specialization often mean that they need to make a tradeoff between which style of play to focus on at each other’s expense. Also, two pointer plays include lay ups and dunks that usually top three-point shooters would not do because they tend to play in the peripheral of the court during the game. One can also argue in the NBA, there is a trade-off between explosiveness and three-point shooting consistency. The explosive quality is important to have do well in the two pointer style play and thus created this lack of positive correlation between three-point success rate and two point success rate.   
   
 Below are for the players made more than 100 3-pointer shots.
-
+\hfill\break
 \footnotesize
-```{r}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 linearModel <- lm(pctfg3 ~ pctfg2, data=fgplayer100)
 kable(tidy(linearModel), caption='3-pointer success rate & 2-pointer success rate')
 
@@ -641,38 +664,41 @@ linearModel7 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer100)
 kable(tidy(linearModel7), caption='3-pointer success rate with 2-pointer success rate & free-throw success rate')
 ```
 \normalsize
-\medskip
-\normalsize
 
+\hfill\break
+\normalsize
 When we look at all the players, 2-pointers and 3-pointers are reverse-related. Maybe because of dunk shots?
+\hfill\break
+
 \footnotesize
-```{r}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 linearModel7 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer)
 kable(tidy(linearModel7), caption='3-pointer success rate with 2-pointer success rate & free-throw success rate: for all players')
 ```
 \normalsize
-\medskip
-\normalsize
 
+\hfill\break
+\normalsize
+\normalsize
 Best players (more than 1,000 career 3-point field goals) are good at 2-pointers as well!!!
+\hfill\break
 
 \footnotesize
-```{r}
-linearModel7 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer1000)
-kable(tidy(linearModel7), caption='3-pointer success rate with 2-pointer success rate & free-throw success rate: for players with 1000+ 3-pointers')
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+linearModel8 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer1000)
+kable(tidy(linearModel8), caption='3-pointer success rate with 2-pointer success rate & free-throw success rate: for players with 1000+ 3-pointers')
 
-linearModel8 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer2000)
-kable(tidy(linearModel8), caption='3-pointer success rate with 2-pointer success rate & free-throw success rate: for players with 2000+ 3-pointers')
+linearModel9 <- lm(pctfg3 ~ pctfg2 + pctft, data=fgplayer2000)
+kable(tidy(linearModel9), caption='3-pointer success rate with 2-pointer success rate & free-throw success rate: for players with 2000+ 3-pointers')
 ```
 \normalsize
-\medskip
-\normalsize
 
+\pagebreak
 
 *	**Q5. Players with high salaries are good at 3-pointers?**
 
 \footnotesize
-```{r}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 if (!exists("nbaInsiderSalaries")) {
   fn <- 'nbaInsiderSalaries.Rdata'
 
@@ -702,19 +728,21 @@ kable(tidy(linearModel), caption='Salary vs 3-pointer success rate: for players 
 linearModel2 <- lm(salaryinM ~ fg3m, data=fgplayersalary2_1000)
 kable(tidy(linearModel2), caption='Salary vs 3-pointer shots made: for players with 1000+ 3-pointers')
 ```
-
 \normalsize
 
-
-Based on the regressions we have above, the indepdent variable, success rate of 3-point shots impact the salary at a statistically significantly, 1% increase in the rate will increase the salary by $0.58 million.  However, It's difficult to say that 3-pointer success rate is the most important factor for one's salary since the regressions may suffer from omitted variable biases since there are many factors that are captured in this data base such as number of rebounds, defense skills and others. (2018-2019 season data only)
+\normalsize
+Based on the regressions we have above, the independent variable, success rate of 3-point shots impact the salary at a statistically significantly, 1% increase in the rate will increase the salary by $0.58 million.  However, it's difficult to say that 3-pointer success rate is the most important factor for one's salary since the regressions may suffer from omitted variable biases since there are many factors that are captured in this data base such as number of rebounds, defense skills and others. (2018-2019 season data only)
 
 \pagebreak
 
-* **Q5. Geographical analysis based on players' hometown**
+* **Q6. Geographical analysis based on players' hometown**
   
-  
-We wanted to explore whether players’ hometowns might have had any impact on their three point shooting skills because different regions may emphasize different basketball playing styles including those that emphasie shooting three pointers versus those that do not.
-
+\normalsize
+We wanted to explore whether players’ hometowns might have had any impact on their three-point shooting skills because different regions may emphasize different basketball playing styles including those that emphasize shooting three-pointers versus those that do not.
+\hfill\break
+\hfill\break
+\hfill\break
+\footnotesize
 ```{r, echo=FALSE, comment=FALSE, warning=FALSE, error=FALSE}
 if (!exists("playerHometown")) {
     fn <- "PlayerHometown.csv"
@@ -736,12 +764,6 @@ fgplayerhometownState$pctfg3 <- fgplayerhometownState$fg3m / fgplayerhometownSta
 fgplayerhometownState$pctfg2 <- fgplayerhometownState$fgm / fgplayerhometownState$fga * 100
 fgplayerhometownState$pctft <- fgplayerhometownState$ftm / fgplayerhometownState$fta * 100
 
-# plotState <- ggplot() +
-#   geom_point(data=fgplayerhometownState, aes(x=state, y=pctfg3, colour=state)) +
-#   xlab(NULL) +
-#   ylab(NULL)
-# plotState
-
 states_map <- map_data("state")
 fghometown <- fgplayerhometownState %>% right_join(states_map, by=c('state'='region'))
 plot_State_map <- ggplot(fghometown) + 
@@ -754,4 +776,4 @@ plot_State_map
 
 Looking at the map above, we found that there are a few outliers in the 3-point success rate, such as the states that are colored in grey, dark green and red. However, we want to be conscious of potential issues of letting a few individual players skew the results because some of the states may not have many players in the NBA, as a result, the few from those states that do play in the NBA may create the impression that is not necessarily consistent with the play style in the actual states.
 
-We would need additional analysis to find out the implication of this chart, but we would like to point out that players from the midwest states seem to have higher than average three pointer shooting accuracy, based on the dark brown color those states have. 
+We would need additional analysis to find out the implication of this chart, but we would like to point out that players from the Midwest states seem to have higher than average three-pointer shooting accuracy, based on the dark brown color those states have. 
