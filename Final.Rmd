@@ -16,7 +16,9 @@ linkcolor: cyan
 fontsize: 10pt
 colorlinks: yes
 ---
-```{r echo=FALSE, out.width='100%'}
+\hfill\break
+\hfill\break
+```{r echo=FALSE, out.width='90%', fig.align='center'}
 knitr::include_graphics('nba2.jpg')
 ```
 ```{r, message=FALSE, echo=FALSE, warning=FALSE}
