@@ -1,5 +1,5 @@
 ---
-title: "National Basketball Association (NBA) and 3-pointers"
+title: "National Basketball Association (NBA) and its recent trend regarding 3-pointers"
 subtitle: "Final Project, DECS-922: *Data Exploration*, Winter 2019"
 author: "Subeom Lee, Tianyi Peng, and Jieul Jang"
 date: "`r Sys.Date()`"
@@ -67,29 +67,36 @@ if (file.exists(fn)) {
 
 # Introduction
 
-In the 2018-2019 NBA regular season, we observed births of many new 3 pointers records. For example, Klay Thompson from the Golden State Warriors, made 14 3-pointers in Chicago last October. ([link](https://ftw.usatoday.com/2018/10/klay-thompson-14-3-pointers-nba-record)) James Harden, a key player from the Houston Rockets who is known for being deadly at making three pointers, created a record of second longest 30-point games streak, 32 games, in last February. This is the first record change after 1962. ([link](http://www.espn.com/nba/story/_/id/26081187/james-harden-historic-30-point-streak-ends-28-win-vs-atlanta)) Also, Klay Thompson mentioned earlier succeeded 10 consecutive 3-pointers in last Jan. ([link](https://www.newsweek.com/klay-thompson-three-pointers-nba-records-golden-state-warriors-los-angeles-1299559)) 
+In the 2018-2019 NBA regular season, we observed births of many new 3 pointers records. For example, Klay Thompson from the Golden State Warriors, made 14 3-pointers in Chicago last October. ([link](https://ftw.usatoday.com/2018/10/klay-thompson-14-3-pointers-nba-record)) James Harden, a key player from the Houston Rockets who is known for being deadly at making three pointers, created a record of second longest 30-point games streak, 32 games, in last February. This is the best record created after 1962. ([link](http://www.espn.com/nba/story/_/id/26081187/james-harden-historic-30-point-streak-ends-28-win-vs-atlanta)) Also, Klay Thompson mentioned earlier succeeded in getting 10 consecutive 3-pointers in last January. ([link](https://www.newsweek.com/klay-thompson-three-pointers-nba-records-golden-state-warriors-los-angeles-1299559)) 
 
-These observations made us interested in looking this phenomenon further, especially whether they are exceptions to the normal or they represent a shifting trend in how teams play in the NBA. Thus, we would like to answer the following questions to gain a better understanding how three pointer shooting has evolved since 1986 while taking into considerations of dimensions such as teams' standings, player age, other scoring methods in the game and a few other factors. 
+These observations made us interested in looking into this phenomenon further, especially whether these observations are exceptions to the normal or they represent a shifting trend in how teams play in the NBA. If NBA indeed has been going some changes in three point shooting strategies, we would like to get a better understanding of the impact of the shifting strategies. Thus, we would like to answer the following questions to gain a better understanding how three pointer shooting has evolved since 1986, while taking into considerations of dimensions such as teams' standings, player age, other scoring methods in the game and a few other factors.
 
 ## Methodology
 
-To conduct the necessary analysis, we used detailed historical data from the nbastatR package. ([link](http://asbcllc.com/nbastatR/index.html)) This is a comprehensive open-source package that has additional tools to analyze the NBA data. Through some initial testing, we found that not all the tools are effective at helping us understand the questions regarding the three point shooting trend in the NBA and some of the additional functions in the NBA package are duplicated. However, we found the dataset to be helpful and sufficient to conduct the proposed research. 
+To conduct the necessary analysis, we used detailed historical data from the nbastatR package and chose the period from 1986 to present based on data availability and the fact that NBA has not announced major rule changes since then. This is important because major rule changes can introduce unintended biases into our analysis. ([link](http://asbcllc.com/nbastatR/index.html)) This is a comprehensive open-source package that has additional tools built in to help analyze the NBA data. Through some initial testing, we found that not all of the tools are effective at helping us understand the questions regarding the three point shooting trend in the NBA and some of the additional functions in the NBA package are duplicated. However, we found the dataset to be helpful and sufficient to conduct the proposed research. 
 
-For additional data such as histrical standings and salary information, that are not included in nbastatR package, we downloaded CSV files from Basketball-Reference.com ([link](https://www.basketball-reference.com/))
+For additional data such as historical standings and salary information, that are not included in nbastatR package, we downloaded CSV files from Basketball-Reference.com ([link](https://www.basketball-reference.com/))
 
-The data from nbastatR (`dataGameLogsPlayer` & `dataGameLogsTeam`) contain all the variables available so we trimmed the data by selecting relevant variables for analysis of each question. 
+The data from nbastatR (`dataGameLogsPlayer` & `dataGameLogsTeam`) contain all the variables available so we trimmed the data by selecting relevant variables for analysis of each question. When needed, we merged tables to create new data frame to run our analysis.
 
 
-## Key questions
-* It seems that players are getting better at making 3-pointers than 10 or 20 years ago (both on average across the league and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?
-* Teams with more 3-pointers tend to be the better performing teams? 
+## Examples of key questions (specific questions will be presented in the detailed analysis sections)
+* It seems that players are getting better at making 3-pointers than 10 or 20 years ago (both on average across the league and also among top 3-pointer shooters vs. top 3-pointer shooters) Is it true?
+
+* Teams with more 3-pointers tend to be the better performing teams in terms of league rankings? 
+
 * Are there any relationship between players’ ages and 3-pointers?
-* Players who are good at 3-pointers are also good at 2-pointers or free throws? 
+
+* Somewhat related to the question above, we want to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are born with.
+
+* Players who are good at 3-pointers are also good at 2-pointers or free throws?
+
 * Players with high salaries are good at 3-pointers? 
-* We want to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are born with. 
+
 * Show the 3-pointer statistics geographically based on players’ hometowns. Maybe this help illustrates the different basketball playing style across different regions, both domestic and international. 
-* We would like to explore the importance of three point shooters in a given team by measuring the share of the team’s total salary over time. 
+
 * What are the expected average points of 3-pointers and 2-pointers? 
+
 * If the expected average point from 3-pointers is getting higher than that of 2-pointers, how should each team’s strategy chang?
 
 \pagebreak
@@ -98,9 +105,9 @@ The data from nbastatR (`dataGameLogsPlayer` & `dataGameLogsTeam`) contain all t
 
 * **Q1.	It seems that players are getting better at making 3-pointers than 20 years ago (both on average and also top 3-pointer shooters vs. top 3-pointer shooters) Is it true?**
 
-Yes, the success rate of 3-point field goal has been increased by about 9% since 1986.  
+Yes, the success rate of 3-pointers on average across the league has increased by about 7% since 1986.  
 
-Based on the chart 1 in the report, from 1986 to recent years, the average team in the NBA has improved their three pointer success rate, which is calculated by dividing the number of three pointers made by the number of three pointers attempted in each regular season. With that said, however, the success ratio has stayed largely flat since 1998, likely to the fact that the rules regarding three pointers have not changed and players on average have reached a plateau in terms of the three pointers success rate. 
+Based on the chart Q1−1. Historical Shooting Success Rate in the report, from 1986 to recent years, the average team in the NBA has improved their three pointer success rate, which is calculated by dividing the number of three pointers made by the number of three pointers attempted in each regular season. With that said, however, the success ratio has stayed largely flat since 1998, likely to the fact that the rules regarding three pointers have not changed and players on average have reached a plateau in terms of improving their three pointers success rate, in absence of new techniques or other strategy changes. 
 
 \footnotesize
 ```{r, echo=FALSE}
@@ -128,7 +135,7 @@ Q1_1 <- ggplot() +
   guides(alpha=FALSE) +
   xlab('Year') +
   ylab(NULL) +
-  ggtitle('Q1-1. Historical Field Goal Success Rate') +
+  ggtitle('Q1-1. Historical shooting Success Rate') +
   theme(panel.background=element_rect(fill=NA)) +
   theme(panel.grid.major.y=element_line(color="grey", linetype=2)) +
   theme(plot.title = element_text(hjust = 0.5)) + 
@@ -141,7 +148,9 @@ Q1_1
 \normalsize
 \pagebreak
 
-Equally interesting, instead of team average, if we were to look at the top 30 three point shooters in the league by success rate or by number of three pointers made, according to chart 2, the main driver behind their improved contribution to the total points score by their team is through the improvement of their three pointer success rate. Similar to the trend we saw among teams earlier, top three point shooters also improved their success rate over the time period that we specified here.
+Equally interesting, instead of team average, if we were to look at the top 30 three point shooters in the league by number of three pointers made, according to chart Q1−2. 3 point success rate of top 30 players, the main driver behind their improved contribution to the total points score by their team is through the improvement of their three pointer success rate. In another word, the average number of three point attempts these top three point shooters made have not changed significantly over time, but the success rate has improved. This observation is similar to the trend we saw in the earlier chart that showed the league average. It seems like the improvement in shooting technique has benefited everyone.
+
+Note: in the RMD file, we attempted to use Python to help execute some of our analysis but ultimately found more efficient ways to carry out our analysis. The Python code is still in the RMD file for your reference but omitted from this report.
 
 \footnotesize
 ```{r, echo=FALSE}
@@ -282,7 +291,7 @@ top9597m <- fgyeartopm %>% filter(Year>=1995) %>% filter(Year<=1997)
 
 * **Q2.	Teams with more 3-pointers tend to be the better performing teams?**
 
-We ran regressions on the team standings during the regular seasons by three pointer success rate and two pointer success rate. If team has a lower standings, in another word, smaller number for its ranking position, it is ranked closer to the top so the better team. Unsurprisingly, the regressions showed that independent variables three pointer success rate and two pointer success rate all have negative coefficients and they are statistically significant at 5%. This means when the three pointer and two pointer success rates increase, the teams tend to have smaller numbers as their rankings, i.e., better rankings. 
+We ran regressions on the team standings during the regular seasons by three pointer success rate and two pointer success rate. The depdent variable ia a team's standing during a given season and the indepdent variables are that team's three pointer success rate. We provided some variations of the regressions by looking at the success rate of two pointers and see how the inclusion of this indepdent variable may have on the regression results. If team has a lower standings, in another word, smaller number for its ranking position, it is ranked closer to the top so the better team. Unsurprisingly, the regressions showed that independent variables three pointer success rate and two pointer success rate all have negative coefficients and they are statistically significant at 5%. This means when the three pointer and two pointer success rates increase, the teams tend to have smaller numbers as their rankings, i.e., better rankings. 
 
 \footnotesize
 ```{r, echo=FALSE}
@@ -322,10 +331,10 @@ kable(tidy(linearModel4), caption='Regression of 3-pointer & 2-pointer success r
 \pagebreak
 \normalsize
 
-However, as two pointers still contributed to a larger share of the total points scored by a given team than three pointers do. The absolute value of the coefficient on two point success rate is larger than that of three point success rate. This is not surprising because improving the same percentage of success rate in two point shooting and three point shooting means that the former will have a larger impact on improving the team’s ranking than the latter does.
+However, as two pointers still contributed to a larger share of the total points scored by a given team than three pointers do. The absolute value of the coefficient on two point success rate is larger than that of three point success rate. This is not surprising because improving the same amount in shooting success rate for two point shooting and three point shooting means that the former will have a larger impact on improving the team’s ranking than the latter does.
 
 
-
+Based on the charts illustrated below, we observed a few interesting points. Even though the three point success rate has stayed largely flat in recent years, as shown in chart Q2−1. 3 Pointer Field Goal made vs tries, teams on average have increased the number of three pointer attempts per game. This naturually led to an increase in the contribution of three pointers to total points scored by a team at the expense of two pointers, as shown in the chart Q2−2. Field Goal Percentage.
 
 \footnotesize
 ```{r, echo=FALSE}
@@ -422,7 +431,7 @@ Q2_2
 \normalsize
 \pagebreak
 
-The expected points from each shot tell another interesting story. 
+The expected points from each type of shot tell another interesting story. What we meant by this is the expected value of attempting a specific type of shot, a two pointer or three pointer.
 
 The expected points of 2-point shots in 1986 was `fgyear$pctfg2[1986-1985]/100 * 2` = `r fgyear$pctfg2[1986-1985]/100*2`  
 The expected points of 3-point shots in 1986 was `fgyear$pctfg3[1986-1985]/100 * 3` = `r fgyear$pctfg3[1986-1985]/100*3`  
@@ -430,7 +439,7 @@ The expected points of 3-point shots in 1986 was `fgyear$pctfg3[1986-1985]/100 *
 The expected points of 2-point shots in 2019 was `fgyear$pctfg2[2019-1985]/100 * 2` = `r fgyear$pctfg2[2019-1985]/100*2`  
 The expected points of 3-point shots in 2019 was `fgyear$pctfg3[2019-1985]/100 * 3` = `r fgyear$pctfg3[2019-1985]/100*3`  
 
-Teams started to focus on 3-point shots after its first introduction in 1979, because the expected points of 3-point shots are higher than that of 2-point shots since early 90's.
+Teams started to pay more attention to 3-point shots after its first introduction in 1979, but not until around 1991 when the expected value of attempting a three point shot exceeded the value of attempting a two point shot. Even after that, it took some time for teams to recognize this fact and make changes in their playing strategy to allocation more resources to shooting threes because the expected points of 3-point shots are higher than that of 2-point shots since early 90's.
 
 Looking back, three-pointer's debut, in the 1979-80 season, was inauspicious.([link](https://www.nytimes.com/2016/01/21/sports/basketball/how-the-nba-3-point-shot-went-from-gimmick-to-game-changer.html))
 
@@ -468,10 +477,11 @@ Q2_2
 \pagebreak
 * **Q3.	Are there any relationship between players’ ages and 3-pointers?**
 
-Really good players are not related with ages/career.  
-Average players' success rate is increased by 0.4% in one year. Not bad...?
+Top three pointer shooting players' three point shooting skills do not bear significant relationship with their ages and length of career.  
 
-Based on the regression that we ran the three pointer accuracy on a given player’s tenure in the NBA, The coefficient is positive and statistically significant at 5%, so we believe as players play longer in the NBA, they tend to have better success rate at shooting three pointers, likely due to continuing training that help improve their three pointer shooting skills and also better understanding of the games and thus know when are the right times to shoot three pointers.
+On the other hand, however, average players' three point shooting success rate increased about 2 percent. 
+
+Based on the regressions that we ran regarding a player's three pointer accuracy on a given player’s tenure in the NBA, The coefficient is positive and statistically significant at 5%, so we believe as players play longer in the NBA, they tend to have better success rate at shooting three pointers, likely due to continuing training that help improve their three pointer shooting skills and also better understanding of the games and thus know when are the right times to shoot three pointers.
 
 \footnotesize
 ```{r, echo=FALSE}
@@ -504,11 +514,11 @@ kable(tidy(linearModel4), caption='3-pointer Success Rate & Tenure: for all play
 
 \normalsize
 
-The graphs showing top players' career-long progress of 3-pointer success rate tells that it generally goes up at the begining, and after career-high, goes down at the end of his career. We also wanted to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are borned with. By above regression and below graphs, there is no dramatic increase in 3-pointer success rate. Maybe if we can check the players' data from NCAA or high school league, there might be different insight. However, based on NBA data, no big changes.
+We have identified some well known players who excel at shooting three pointers. The graphs show each one of these top players' career-long progress of 3-pointer success rate. Though these players might have played for different teams and during time, we observed some interesting trends. First, three point shooting success rate generally go up at the begining, which is likely due to the fact that they receive best in class training to help them improve their shooting skills. After career-high, the three point success rates would go down towards the end of his career. We also wanted to analyze whether players can drastically improve their three point shooting skills over time or the skill is rather something people are borned with. By above regression and below graphs, there is no dramatic increase in 3-pointer success rate. Maybe if we can check the players' data from NCAA or high school league, there might be different insight. However, based on NBA data, it does not appear that top three point shooting players can significantly improve their three point shooting skills over time, except some initial uptick at the very beginning of their NBA careers for some players.
 
 \footnotesize
 ```{r}
-xaxisbreaks <- seq(1986, 2019, by=3)
+xaxisbreaks <- seq(1986, 2019, by=8)
 yaxisbreaks <- seq(25, 55, by=5)
 
 plotYearPlayer2000 <- ggplot() +
