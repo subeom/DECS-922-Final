@@ -203,11 +203,13 @@ except:
 ```
 
 ```{r, message=FALSE, echo=FALSE, warning=FALSE}
-if (!exists("fgplayer") && file.exists(fn)) {
-  load(fn)
-} else {
-  fgplayer <- py$fgplayer
-  save(fgplayer, file=fn)
+if (!exists("fgplayer")) {
+  if (file.exists(fn)) {
+    load(fn)
+  } else {
+    fgplayer <- py$fgplayer
+    save(fgplayer, file=fn)
+  }
 }
 
 fgplayer100 <- fgplayer %>% filter(fg3m >= 100)
