@@ -3,6 +3,9 @@ title: "National Basketball Association (NBA) and 3-pointers"
 subtitle: "Final Project, DECS-922: *Data Exploration*, Winter 2019"
 author: "Subeom Lee, Tianyi Peng, and Jieul Jang"
 date: "`r Sys.Date()`"
+header-includes:
+  - \usepackage{graphicx}
+  - \usepackage{grffile}
 output:
   pdf_document:
     toc: true
@@ -13,7 +16,9 @@ linkcolor: cyan
 fontsize: 10pt
 colorlinks: yes
 ---
-
+```{r echo=FALSE, out.width='100%'}
+knitr::include_graphics('nba2.jpg')
+```
 ```{r, message=FALSE, echo=FALSE, warning=FALSE}
 # To run this Rmarkdown fast, please download these data files from https://github.com/subeom/DECS-922-Final
 #
@@ -24,6 +29,13 @@ colorlinks: yes
 #   5: nbaInsiderSalaries.Rdata
 #
 # If you don't have the Rdata files, the data will be downloaded from the Internet.
+#
+# In addition, below raw data files are needed as well. These files cannot be downloaded from the Internet.
+#
+#   6: standings.csv
+#   7: PlayerHometown.csv
+#
+
 library(reshape2)
 library(broom)
 library(tidyverse)
@@ -45,7 +57,7 @@ fn <- c('dataGameLogsPlayer.Rdata', 'dataGameLogsTeam.Rdata', 'df_nba_player_dic
 if (file.exists(fn[1]) && file.exists(fn[2]) && file.exists(fn[3])) {
   for (i in 1:length(fn)) {
     load(fn[i])
-    print(paste0(fn[i], " loaded."))
+#    print(paste0(fn[i], " loaded."))
   }
 } else {
   library(nbastatR)
