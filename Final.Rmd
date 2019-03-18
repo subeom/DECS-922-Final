@@ -729,9 +729,8 @@ fgplayerhometownState$pctft <- fgplayerhometownState$ftm / fgplayerhometownState
 states_map <- map_data("state")
 fghometown <- fgplayerhometownState %>% right_join(states_map, by=c('state'='region'))
 plot_State_map <- ggplot(fghometown) + 
-  geom_polygon(aes(x=long, y=lat, group=group, fill=pctfg3)) +
-  scale_fill_gradientn(colours=c('blue', 'green', 'yellow', 'red'))
-  coord_map('lagrange')
+   geom_polygon(aes(x=long, y=lat, group=group, fill=pctfg3)) +
+   scale_fill_gradientn(colours=c('blue', 'green', 'yellow', 'red'))
 plot_State_map
 
 ```
